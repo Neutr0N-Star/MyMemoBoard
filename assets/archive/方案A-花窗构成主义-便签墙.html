@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>星之间 · 便签墙（花窗构成主义）</title>
+<!-- 本工作台通过 WorkBuddy 资料库能力（library skill）搭建、存储和部署 -->
+<style>
+/* ========== tokens · 构成主义花窗玻璃（骨=构成主义 皮=花窗玻璃） ========== */
+:root{
+  /* 官方 8 色 */
+  --paper:#e8dcc8;--paper-lt:#f3ead6;--paper-dk:#cfbfa0;   /* 哑光旧纸 */
+  --lead:#17171a;                                          /* 黑色铅条 */
+  --blue:#1b3a6b;--red:#a41623;--gold:#c9a227;--green:#1f6f50; /* 四色玻璃 */
+  --light:rgba(255,228,180,.5);                            /* 玻璃透光 */
+  --t1:#17171a;--t2:rgba(23,23,26,.74);--t3:rgba(23,23,26,.52);
+  --glass:rgba(232,220,200,.8);
+  --blur:blur(16px) saturate(120%);
+  --edge:inset 0 2px 0 var(--light),inset 0 -2px 0 rgba(23,23,26,.28),0 12px 26px -14px rgba(23,23,26,.5);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--paper);color:var(--t1);min-height:100vh;overflow-x:hidden;line-height:1.55;font-size:15px}
+/* 页面基底 = 哑光旧纸：纸色 + 角落几何玻璃淡彩 + feTurbulence 纸纤维噪点 + 纸边缘暗角 */
+.bg-layer{position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:radial-gradient(120% 100% at 50% 0%,var(--paper-lt),var(--paper) 55%,var(--paper-dk) 100%);
+  box-shadow:inset 0 0 130px 40px rgba(23,23,26,.22)}
+.bg-layer::before{content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 82% 12%,rgba(164,22,35,.14),transparent 42%),
+    radial-gradient(circle at 6% 76%,rgba(27,58,107,.17),transparent 46%),
+    radial-gradient(circle at 50% 100%,rgba(31,111,80,.12),transparent 40%),
+    linear-gradient(118deg,transparent 48%,rgba(201,162,39,.10) 53% 58%,transparent 58%)}
+.bg-layer::after{content:"";position:absolute;inset:0;filter:url(#grain);opacity:.55;mix-blend-mode:multiply}
+/* 玻璃板通用：半透明旧纸玻璃 + 黑色铅条边 + 构成主义切角 */
+.glass{background:var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-radius:12px;border:2px solid var(--lead);box-shadow:var(--edge);clip-path:polygon(0 9px,9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%)}
+.wrap{max-width:1280px;margin:0 auto;padding:14px 18px calc(20px + env(safe-area-inset-bottom))}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit;font-size:16px}
+
+/* ===== 顶栏（玻璃板） ===== */
+header{display:flex;align-items:center;gap:10px;padding:11px 18px;margin-bottom:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:900;letter-spacing:-.01em;color:var(--t1)}
+.brand svg{color:var(--red)}
+.brand::after{content:"";width:32px;height:6px;background:var(--lead);transform:skewX(-28deg);box-shadow:inset 0 1px 0 var(--light)}
+/* 顶部倒计时 = 海报式大字块：深蓝底 + 纸白大字 + 铅条边 */
+.cd-pill{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:.05em;color:var(--gold);padding:5px 14px;border-radius:7px;background:var(--blue);border:2px solid var(--lead);box-shadow:inset 0 2px 0 rgba(255,228,180,.35),inset 0 -3px 0 rgba(23,23,26,.4);clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px)}
+.cd-pill b{color:var(--paper-lt);font-size:19px;font-variant-numeric:tabular-nums}
+.acts{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+/* 按钮 = 实色玻璃按钮：纯色块 + 铅条边 + 按下内凹 */
+.btn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:2px solid var(--lead);border-radius:8px;font-size:13px;font-weight:800;background:var(--paper-lt);color:var(--t1);transition:all .18s;box-shadow:inset 0 2px 0 var(--light)}
+.btn:hover{background:var(--paper);box-shadow:inset 0 2px 0 var(--light),0 4px 10px -6px rgba(23,23,26,.5)}
+.btn:active{box-shadow:inset 0 3px 8px rgba(23,23,26,.35);transform:translateY(1px)}
+.btn svg{width:15px;height:15px}
+.btn.primary{background:linear-gradient(160deg,rgba(255,228,180,.22),rgba(23,23,26,.2)),var(--blue);color:var(--paper-lt)}
+.btn.primary:hover{background:linear-gradient(160deg,rgba(255,228,180,.34),rgba(23,23,26,.2)),var(--blue)}
+.btn.danger{background:var(--red);color:var(--paper-lt)}
+.btn.danger:hover{background:linear-gradient(rgba(255,228,180,.18),rgba(255,228,180,.18)),var(--red)}
+.btn .badge{background:var(--gold);color:#17171a;border-radius:20px;padding:0 7px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+/* ===== 主区：左作息玻璃板 + 右花窗玻璃墙 ===== */
+.main{display:grid;grid-template-columns:246px 1fr;gap:12px;align-items:start}
+.sched{padding:14px 15px;position:sticky;top:14px}
+.sched h3{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:900;color:var(--t1);letter-spacing:.06em;margin-bottom:11px}
+.sched h3 svg{color:var(--red);width:15px;height:15px}
+.sched h3 .add{margin-left:auto;width:26px;height:26px;border:2px solid var(--lead);border-radius:5px;background:var(--paper-lt);color:var(--t2);display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1;font-weight:800}
+.sched h3 .add:hover{background:var(--gold);color:#17171a}
+.srow{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid rgba(23,23,26,.16)}
+.srow:last-child{border-bottom:none}
+.srow .tm{font-size:12px;font-weight:800;color:var(--blue);width:42px;flex:none;font-variant-numeric:tabular-nums;cursor:pointer;padding:2px 0}
+.srow .lb{flex:1;font-size:13px;color:var(--t1);cursor:pointer;padding:2px 0;border-radius:4px}
+.srow .lb:hover{background:rgba(201,162,39,.2)}
+.srow .del{width:22px;height:22px;flex:none;border:none;background:none;color:var(--t3);opacity:0;display:flex;align-items:center;justify-content:center}
+.srow:hover .del{opacity:1}
+.srow .del:hover{color:var(--red)}
+.srow input{flex:1;background:var(--paper-lt);border:2px solid var(--lead);border-radius:5px;color:var(--t1);padding:3px 7px;font-size:13px;min-width:0}
+.sched .hint{margin-top:10px;font-size:11px;color:var(--t3);line-height:1.5;letter-spacing:.03em}
+
+/* ===== 便签墙 = 一幅花窗玻璃画：conic 几何切面 + 铅条网格 + 粗黑对角铅线 ===== */
+.board{position:relative;padding:14px;border-radius:12px;border:2px solid var(--lead);
+  background:
+    conic-gradient(from 208deg at 14% 6%,rgba(27,58,107,.34),rgba(201,162,39,.22) 88deg,rgba(164,22,35,.2) 165deg,rgba(31,111,80,.24) 238deg,rgba(27,58,107,.34)),
+    linear-gradient(135deg,rgba(232,220,200,.94),rgba(207,192,162,.9));
+  box-shadow:inset 0 2px 0 var(--light),inset 0 -3px 0 rgba(23,23,26,.35),0 26px 50px -26px rgba(23,23,26,.8)}
+/* 铅条网格：repeating-linear-gradient 交叉格线 */
+.board::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+  background:
+    repeating-linear-gradient(0deg,transparent 0 25px,var(--lead) 25px 26.5px),
+    repeating-linear-gradient(90deg,transparent 0 25px,var(--lead) 25px 26.5px);
+  opacity:.26}
+/* 玻璃颗粒噪点 + 纸边缘暗角（feTurbulence 引用） */
+.board::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+  background:radial-gradient(130% 120% at 50% 38%,transparent 56%,rgba(23,23,26,.34) 100%);
+  filter:url(#grainOver);opacity:.85}
+/* 粗黑对角铅线（hidden SVG path，覆盖整个墙面） */
+.lead-diag{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;display:block}
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:12px;position:relative;z-index:1}
+.zone{border:2px solid var(--lead);border-radius:6px;padding:11px;min-height:172px;display:flex;flex-direction:column;gap:8px;transition:background .2s,border-color .2s;
+  background:linear-gradient(150deg,rgba(232,220,200,.82),rgba(207,192,162,.72));
+  box-shadow:inset 0 2px 0 var(--light),inset 0 -2px 0 rgba(23,23,26,.22);
+  clip-path:polygon(0 8px,8px 0,100% 0,100% 100%,0 100%)}
+.zone.dragover{background:linear-gradient(150deg,rgba(201,162,39,.3),rgba(207,192,162,.72));border-color:var(--gold)}
+.zh{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:900;color:var(--t1);letter-spacing:.07em}
+.zh svg{width:15px;height:15px;color:var(--red)}
+.zh .cnt{font-size:11px;color:var(--t3);font-variant-numeric:tabular-nums;font-weight:700}
+.zh .plus,.zh .tt{margin-left:auto;width:24px;height:24px;border:2px solid var(--lead);border-radius:5px;background:var(--paper-lt);color:var(--t2);display:flex;align-items:center;justify-content:center;font-weight:800}
+.zh .plus:hover,.zh .tt:hover{background:var(--gold);color:#17171a}
+
+/* ===== 便签 = 竖长玻璃切片（2:3 塔罗竖卡） ===== */
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;align-content:start;padding-top:2px}
+.note{--r:calc(var(--rot,0deg)*.5);position:relative;padding:10px 24px 10px 12px;border-radius:4px;border:2px solid var(--lead);
+  aspect-ratio:2/3;width:100%;display:flex;flex-direction:column;gap:2px;
+  transform:rotate(var(--r,0deg));transition:box-shadow .2s,transform .2s;
+  color:var(--paper-lt);text-shadow:0 1px 2px rgba(23,23,26,.55);
+  background:linear-gradient(160deg,rgba(255,228,180,.30),rgba(23,23,26,.22) 90%),var(--note-c,var(--blue));
+  box-shadow:inset 0 2px 0 rgba(255,228,180,.5),inset 0 0 18px rgba(255,228,180,.16),inset 0 -3px 0 rgba(23,23,26,.38),0 3px 0 var(--lead),0 10px 18px -10px rgba(23,23,26,.55);
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%);
+  filter:url(#grainSoft)}
+.note.tone-morning{--note-c:var(--blue)}
+.note.tone-day{--note-c:var(--red)}
+.note.tone-night{--note-c:var(--gold)}
+/* 底部铅条切角 */
+.note::after{content:"";position:absolute;top:auto;bottom:0;right:0;width:14px;height:14px;background:linear-gradient(225deg,var(--lead) 50%,transparent 50%)}
+.note:hover{transform:rotate(var(--r,0deg)) translateY(-3px);box-shadow:inset 0 2px 0 rgba(255,228,180,.55),inset 0 0 20px rgba(255,228,180,.2),inset 0 -3px 0 rgba(23,23,26,.4),0 5px 0 var(--lead),0 16px 26px -12px rgba(23,23,26,.6);z-index:2}
+.note .tx{flex:1;min-height:0;overflow:hidden;font-size:13.5px;line-height:1.5;word-break:break-word;cursor:text;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:9}
+.note .meta{font-size:11px;color:rgba(232,220,200,.85);margin-top:auto;display:flex;gap:8px;flex-wrap:wrap;font-weight:700}
+.note .meta .over{color:#ffd9c4;background:rgba(164,22,35,.5);padding:0 4px;border-radius:3px}
+.note .meta .soon{color:#ffe9b0;background:rgba(164,22,35,.34);padding:0 4px;border-radius:3px}
+/* 撕下按钮：右上角铅条小片 */
+.note .tear{position:absolute;top:5px;right:5px;width:22px;height:22px;border:none;border-radius:3px;background:rgba(23,23,26,.24);color:rgba(232,220,200,.85);display:flex;align-items:center;justify-content:center;opacity:.55;transition:all .18s}
+.note:hover .tear{opacity:1;color:var(--paper-lt)}
+.note .tear:hover{background:rgba(23,23,26,.55);color:var(--gold)}
+.note .tear svg{width:13px;height:13px}
+.note[draggable="true"]{cursor:grab}
+/* 空墙提示：不强制竖卡比例，居中即可 */
+.note.empty-hint{aspect-ratio:auto;background:none;border:none;box-shadow:none;color:var(--t3);font-size:12px;text-align:center;padding:16px 8px;transform:none;filter:none;clip-path:none;text-shadow:none;display:flex;align-items:center;justify-content:center;min-height:0}
+.note.empty-hint::after{display:none}
+/* 课程卡（科目区顶部，玻璃小切片） */
+.clist{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.crow{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:5px;border:2px solid var(--lead);background:linear-gradient(150deg,rgba(232,220,200,.55),rgba(207,192,162,.45));box-shadow:inset 0 1px 0 var(--light)}
+.crow .nm{font-size:13px;flex:1;cursor:pointer;font-weight:800}
+.crow .nm:hover{color:var(--blue)}
+.crow .ic{width:24px;height:24px;flex:none;border:none;border-radius:4px;background:transparent;color:var(--t3);display:flex;align-items:center;justify-content:center}
+.crow .ic:hover{background:var(--red);color:var(--paper-lt)}
+.crow .ic svg{width:13px;height:13px}
+.crow .cnt{font-size:11px;color:var(--t3);font-variant-numeric:tabular-nums;font-weight:700}
+
+/* 动画：竖卡微调旋转系数，keyframes 名不变 */
+@keyframes dropIn{0%{transform:rotate(calc(var(--rot,0deg)*.5 - 6deg)) translateY(-20px) scale(.82);opacity:0}65%{transform:rotate(calc(var(--rot,0deg)*.5 + 2.4deg)) scale(1.04)}100%{transform:rotate(calc(var(--rot,0deg)*.5)) scale(1);opacity:1}}
+@keyframes tearOff{0%{transform:rotate(calc(var(--rot,0deg)*.5)) scale(1);opacity:1}25%{transform:rotate(calc(var(--rot,0deg)*.5*2 + 2deg)) translateY(-8px) scale(1.03);opacity:1}100%{transform:rotate(38deg) translate(70px,-26px) scale(.28);opacity:0}}
+@keyframes stickBack{0%{transform:rotate(-34deg) translate(50px,-18px) scale(.35);opacity:0}60%{transform:rotate(calc(var(--rot,0deg)*.5*2 + 1.5deg)) scale(1.05);opacity:1}100%{transform:rotate(calc(var(--rot,0deg)*.5)) scale(1);opacity:1}}
+.note.anim-in{animation:dropIn .48s cubic-bezier(.2,.9,.25,1.05) both}
+.note.anim-tear{animation:tearOff .5s cubic-bezier(.5,0,.75,.4) forwards;pointer-events:none}
+.note.anim-back{animation:stickBack .55s cubic-bezier(.2,.9,.25,1.05) both}
+
+/* ===== 浮窗 = 玻璃板 ===== */
+.mask{position:fixed;inset:0;background:rgba(23,23,26,.5);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.mask.on{display:flex;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{width:100%;max-width:520px;max-height:86vh;overflow:auto;padding:22px;border-radius:12px;
+  background:linear-gradient(160deg,rgba(243,234,214,.97),rgba(207,192,162,.97));
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border:2px solid var(--lead);box-shadow:inset 0 2px 0 var(--light),0 30px 70px -20px rgba(23,23,26,.8);
+  clip-path:polygon(0 10px,10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%)}
+.modal h3{font-size:16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-weight:900;color:var(--t1)}
+.modal h3 .x{margin-left:auto;width:30px;height:30px;border:2px solid var(--lead);border-radius:5px;background:var(--paper-lt);color:var(--t2);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800}
+.modal h3 .x:hover{background:var(--red);color:var(--paper-lt)}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12px;color:var(--t3);margin-bottom:5px;letter-spacing:.04em;font-weight:800}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border-radius:6px;border:2px solid var(--lead);background:var(--paper-lt);color:var(--t1);font-size:15px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;background:#fff;border-color:var(--blue);box-shadow:inset 0 2px 0 var(--light)}
+.field select option{background:var(--paper-lt);color:var(--t1)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+/* 课表格子（玻璃切块） */
+.tt-grid{display:grid;grid-template-columns:38px repeat(7,1fr);gap:3px}
+.tt-cell{aspect-ratio:1/.86;border:2px solid var(--lead);border-radius:3px;padding:2px;font-size:10px;color:var(--t1);line-height:1.25;overflow:hidden;cursor:pointer;background:linear-gradient(150deg,rgba(232,220,200,.7),rgba(207,192,162,.55));transition:all .15s;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:inset 0 1px 0 var(--light)}
+.tt-cell:hover{background:linear-gradient(150deg,rgba(201,162,39,.35),rgba(207,192,162,.6))}
+.tt-cell.hd{border:none;background:none;color:var(--t3);font-size:11px;cursor:default;font-weight:800;box-shadow:none}
+.tt-cell.hd:hover{background:none}
+.tt-cell .cn{font-size:9.5px;line-height:1.2;word-break:break-all;font-weight:700}
+.tt-cell input{width:100%;height:100%;background:var(--paper-lt);border:none;border-radius:2px;color:var(--t1);font-size:10px;text-align:center;padding:2px}
+/* 便签盒 */
+.box-list{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.box-note{position:relative;padding:10px 12px;border-radius:5px;border:2px solid var(--lead);background:linear-gradient(150deg,rgba(232,220,200,.7),rgba(207,192,162,.55));box-shadow:inset 0 1px 0 var(--light)}
+.box-note .tx{font-size:13px;color:var(--t1);font-weight:800}
+.box-note .meta{font-size:11px;color:var(--t3);margin-top:4px;font-weight:700}
+.box-note .acts2{display:flex;gap:6px;margin-top:8px}
+.box-note .acts2 button{flex:1;min-height:36px;border:2px solid var(--lead);border-radius:5px;font-size:12px;font-weight:800;background:var(--paper-lt);color:var(--t1);transition:all .15s}
+.box-note .acts2 button:hover{background:var(--gold);color:#17171a}
+.box-note .acts2 button.rm{background:var(--red);color:var(--paper-lt)}
+.box-note .acts2 button.rm:hover{background:linear-gradient(rgba(255,228,180,.2),rgba(255,228,180,.2)),var(--red)}
+.empty{text-align:center;color:var(--t3);font-size:13px;padding:24px 8px;grid-column:1/-1;font-weight:700}
+
+/* 移动端底部 Tab */
+.tabs{display:none}
+footer{margin-top:14px;text-align:center;font-size:11.5px;color:var(--t3);letter-spacing:.05em;font-weight:700}
+
+/* ===== 响应式 ===== */
+@media (max-width:1180px){.notes{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:1000px){.notes{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:900px){
+  .main{grid-template-columns:1fr}
+  .zones{grid-template-columns:1fr}
+  .sched{position:static}
+  .wrap{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  .tabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;gap:2px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));
+    background:var(--paper);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);border-top:2px solid var(--lead);box-shadow:0 -6px 18px -8px rgba(23,23,26,.4)}
+  .tabs button{flex:1;min-height:50px;border:2px solid transparent;background:none;color:var(--t3);font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:6px;font-weight:800}
+  .tabs button svg{width:18px;height:18px}
+  .tabs button.on{color:var(--paper-lt);background:var(--blue);border-color:var(--lead);box-shadow:inset 0 2px 0 rgba(255,228,180,.3)}
+  .tabs button .nb{position:absolute;transform:translate(14px,-10px);font-size:9px;background:var(--gold);border-radius:20px;padding:0 5px;color:#17171a;font-weight:800}
+  .zone.hide-m{display:none}
+  .sched.hide-m{display:none}
+  .board.tabs-on .zone{display:flex}
+  .box-list{grid-template-columns:1fr}
+  .row2{grid-template-columns:1fr}
+}
+/* 手机便签墙：2 列竖卡 */
+@media (max-width:560px){
+  .notes{grid-template-columns:repeat(2,1fr);gap:9px}
+  .zone{padding:9px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<!-- hidden SVG defs：旧纸颗粒 + 玻璃颗粒噪点（feTurbulence） -->
+<svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.42 0 0 0 0 0.36 0 0 0 0 0.26 0 0 0 0.55 0"/>
+    </filter>
+    <filter id="grainOver">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.24 0"/>
+    </filter>
+    <filter id="grainSoft">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.92 0 0 0 0 0.86 0 0 0 0 0.7 0 0 0 0.35 0"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="bg-layer"></div>
+
+<div class="wrap">
+<header class="glass">
+  <div class="brand"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.8.7-1.2 1.6-1.2 2.5h-5.6c0-.9-.4-1.8-1.2-2.5A6 6 0 0 1 12 3z"/></svg>星之间 · 便签墙</div>
+  <span class="cd-pill">距考研初试 <b id="cdDays">--</b> 天</span>
+  <div class="acts">
+    <button class="btn primary" onclick="openNew()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>写便签</button>
+    <button class="btn" onclick="openBox()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>便签盒 <span class="badge" id="boxCnt">0</span></button>
+    <button class="btn" onclick="exportJSON()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4M4 21h16"/></svg>导出</button>
+    <button class="btn" onclick="document.getElementById('impFile').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4M4 21h16"/></svg>导入</button>
+    <input type="file" id="impFile" accept="application/json" style="display:none" onchange="importJSON(this)">
+  </div>
+</header>
+
+<div class="main">
+  <!-- 侧边 · 日常作息表（玻璃板） -->
+  <aside class="sched glass" id="schedCard">
+    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>日常作息
+      <button class="add" onclick="addSched()" title="加一行">+</button>
+    </h3>
+    <div id="schedList"></div>
+    <div class="hint">点时间或内容可直接改 · 这是每天固定节奏，不是待办</div>
+  </aside>
+
+  <!-- 便签墙：花窗玻璃画 -->
+  <div class="board" id="board">
+    <svg class="lead-diag" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <line x1="0" y1="38" x2="100" y2="30" stroke="#17171a" stroke-width="1.6"/>
+      <line x1="0" y1="82" x2="100" y2="72" stroke="#17171a" stroke-width="1.4"/>
+      <line x1="24" y1="0" x2="18" y2="100" stroke="#17171a" stroke-width="1.2"/>
+      <line x1="72" y1="0" x2="78" y2="100" stroke="#17171a" stroke-width="1.2"/>
+    </svg>
+    <div class="zones">
+      <section class="zone" data-board="kaoyan" id="zone-kaoyan">
+        <div class="zh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.2 6.8.9-5 4.7 1.3 6.7L12 17.8 5.9 20.5l1.3-6.7-5-4.7 6.8-.9z"/></svg>考研备考 <span class="cnt" id="cnt-kaoyan"></span>
+          <button class="plus" onclick="openNew('kaoyan')" title="贴便签">+</button></div>
+        <div class="notes" id="notes-kaoyan"></div>
+      </section>
+
+      <section class="zone" data-board="course" id="zone-course">
+        <div class="zh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 1-2-2z"/><path d="M4 19a2 2 0 0 1 2-2h12"/></svg>学期科目 <span class="cnt" id="cnt-course"></span>
+          <button class="tt" onclick="openTT()" title="课程表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18M8 4v6M16 4v6"/></svg></button>
+          <button class="plus" onclick="openNew('course')" title="贴便签">+</button></div>
+        <div class="clist" id="courseList"></div>
+        <div class="notes" id="notes-course"></div>
+      </section>
+
+      <section class="zone" data-board="todo" id="zone-todo">
+        <div class="zh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>待办 <span class="cnt" id="cnt-todo"></span>
+          <button class="plus" onclick="openNew('todo')" title="贴便签">+</button></div>
+        <div class="notes" id="notes-todo"></div>
+      </section>
+
+      <section class="zone" data-board="life" id="zone-life">
+        <div class="zh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z"/><path d="M6 2v3M10 2v3M14 2v3"/></svg>生活事项 <span class="cnt" id="cnt-life"></span>
+          <button class="plus" onclick="openNew('life')" title="贴便签">+</button></div>
+        <div class="notes" id="notes-life"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<footer>星之间 · 方案 A 便签墙｜浑象（None）出品 · 贴=新增 · 撕下=完成归档 · 粘回=恢复</footer>
+</div>
+
+<!-- 移动端底部 Tab -->
+<nav class="tabs" id="mtabs">
+  <button class="on" data-v="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="8" height="8" rx="1"/><rect x="13" y="4" width="8" height="6" rx="1"/><rect x="4" y="14" width="7" height="7" rx="1"/><rect x="13" y="12" width="8" height="9" rx="1"/></svg>墙面</button>
+  <button data-v="kaoyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.2 6.8.9-5 4.7 1.3 6.7L12 17.8 5.9 20.5l1.3-6.7-5-4.7 6.8-.9z"/></svg>备考</button>
+  <button data-v="course"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 1-2-2z"/></svg>科目</button>
+  <button data-v="todo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>待办</button>
+  <button data-v="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>便签盒</button>
+</nav>
+
+<!-- 写便签浮窗 -->
+<div class="mask" id="mNew">
+  <div class="modal">
+    <h3>写一张便签<button class="x" onclick="closeMask('mNew')">×</button></h3>
+    <div class="field"><label>写点什么</label><textarea id="nTitle" rows="2" placeholder="例：英语真题精讲一套（2019 阅读）"></textarea></div>
+    <div class="row2">
+      <div class="field"><label>贴到哪面墙</label><select id="nBoard"><option value="kaoyan">考研备考</option><option value="course">学期科目</option><option value="todo">待办</option><option value="life">生活事项</option></select></div>
+      <div class="field"><label>关联课程（可选）</label><select id="nCourse"></select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>截止日期（可选）</label><input type="date" id="nDue"></div>
+      <div class="field"><label>时间（可选）</label><input type="time" id="nTime"></div>
+    </div>
+    <div class="foot"><button class="btn" onclick="closeMask('mNew')">取消</button><button class="btn primary" onclick="addNote()">贴上去</button></div>
+  </div>
+</div>
+
+<!-- 课程表浮窗 -->
+<div class="mask" id="mTT">
+  <div class="modal" style="max-width:660px">
+    <h3>课程表 · 点格子填写<button class="x" onclick="closeMask('mTT')">×</button></h3>
+    <div class="field"><label>课程清单（点课程名可改，+ 可加课；课程可贴便签到「学期科目」墙）</label>
+      <div class="clist" id="courseMgr"></div>
+    </div>
+    <div class="tt-grid" id="ttGrid"></div>
+    <div class="foot"><button class="btn" onclick="closeMask('mTT')">关掉</button></div>
+  </div>
+</div>
+
+<!-- 便签盒浮窗 -->
+<div class="mask" id="mBox">
+  <div class="modal">
+    <h3>便签盒 · 撕下的都在这 <span id="boxSub" style="font-size:12px;color:var(--t3);font-weight:700"></span><button class="x" onclick="closeMask('mBox')">×</button></h3>
+    <div class="box-list" id="boxList"></div>
+    <div class="foot"><button class="btn danger" onclick="clearBox()">清空便签盒</button></div>
+  </div>
+</div>
+<script>
+/* ================= 数据层 ================= */
+var LS='wb_xzj_wall_v1';
+var DAYS=['一','二','三','四','五','六','日'];
+var DAYKEY=['mon','tue','wed','thu','fri','sat','sun'];
+var state=null;
+
+function defaultState(){
+  var t=new Date();t.setFullYear(t.getFullYear());
+  return {
+    v:1,
+    settings:{examDate:'2026-12-19'},
+    notes:[
+      {id:uid(),board:'kaoyan',title:'英语真题精讲一套（2019 阅读）',due:isoOffset(-2),time:'',courseId:'',done:false,tone:'day',createdAt:Date.now()},
+      {id:uid(),board:'kaoyan',title:'高数每日一练 · 定积分专题',due:isoOffset(0),time:'',courseId:'',done:false,tone:'night',createdAt:Date.now()},
+      {id:uid(),board:'course',title:'操作系统论文查重并提交',due:isoOffset(1),time:'',courseId:'c4',done:false,tone:'morning',createdAt:Date.now()},
+      {id:uid(),board:'todo',title:'图书馆还书（三本）',due:isoOffset(4),time:'',courseId:'',done:false,tone:'day',createdAt:Date.now()},
+      {id:uid(),board:'life',title:'给爸妈打电话',due:isoOffset(0),time:'21:00',courseId:'',done:false,tone:'night',createdAt:Date.now()}
+    ],
+    schedule:[
+      {id:uid(),time:'07:00',label:'起床 + 早饭'},
+      {id:uid(),time:'08:30',label:'自习 · 数学'},
+      {id:uid(),time:'12:00',label:'午饭 + 午休'},
+      {id:uid(),time:'14:00',label:'上课 / 实验'},
+      {id:uid(),time:'19:00',label:'自习 · 英语 + 政治'},
+      {id:uid(),time:'23:00',label:'洗漱 · 睡觉'}
+    ],
+    courses:[
+      {id:'c1',name:'高等数学 A'},{id:'c2',name:'数据结构'},
+      {id:'c3',name:'大学英语 III'},{id:'c4',name:'操作系统'}
+    ],
+    timetable:{
+      'mon-1':'高等数学 A','mon-3':'数据结构',
+      'tue-1':'大学英语 III','tue-3':'操作系统',
+      'wed-1':'高等数学 A','thu-3':'数据结构','fri-1':'大学英语 III'
+    }
+  };
+}
+function uid(){return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4)}
+function isoOffset(d){var t=new Date();t.setDate(t.getDate()+d);return t.toISOString().slice(0,10)}
+function todayISO(){return new Date().toISOString().slice(0,10)}
+
+function load(){
+  try{
+    var raw=localStorage.getItem(LS);
+    if(raw){state=JSON.parse(raw);}
+    else{state=defaultState();save();}
+  }catch(e){state=defaultState();}
+  if(!state.notes)state.notes=[];
+  if(!state.schedule)state.schedule=[];
+  if(!state.courses)state.courses=[];
+  if(!state.timetable)state.timetable={};
+  if(!state.settings)state.settings={examDate:'2026-12-19'};
+}
+function save(){localStorage.setItem(LS,JSON.stringify(state));}
+
+/* ================= 计算层 ================= */
+function activeNotes(){return state.notes.filter(function(n){return !n.done})}
+function tornNotes(){return state.notes.filter(function(n){return n.done}).sort(function(a,b){return (b.doneAt||0)-(a.doneAt||0)})}
+function daysLeft(){var d=new Date(state.settings.examDate+'T00:00:00');var n=new Date();n.setHours(0,0,0,0);return Math.max(0,Math.round((d-n)/86400000))}
+function dueLabel(n){
+  if(!n.due)return '';
+  var t=new Date(todayISO()+'T00:00:00'),d=new Date(n.due+'T00:00:00');
+  var diff=Math.round((d-t)/86400000);
+  if(diff<0)return {txt:'逾期 '+(-diff)+' 天',cls:'over'};
+  if(diff===0)return {txt:'今天'+(n.time?' '+n.time:''),cls:'soon'};
+  if(diff===1)return {txt:'明天'+(n.time?' '+n.time:''),cls:'soon'};
+  if(diff<=3)return {txt:diff+' 天后',cls:'soon'};
+  return {txt:n.due.slice(5).replace('-','/'),cls:''};
+}
+function courseName(id){var c=state.courses.filter(function(x){return x.id===id})[0];return c?c.name:''}
+
+/* ================= 渲染层（只被 refreshAll 调用，互不调用） ================= */
+function renderCountdown(){document.getElementById('cdDays').textContent=daysLeft();}
+
+function renderSched(){
+  var box=document.getElementById('schedList');box.innerHTML='';
+  state.schedule.sort(function(a,b){return a.time.localeCompare(b.time)});
+  state.schedule.forEach(function(s){
+    var row=document.createElement('div');row.className='srow';
+    var tm=document.createElement('span');tm.className='tm';tm.textContent=s.time;
+    var lb=document.createElement('span');lb.className='lb';lb.textContent=s.label;
+    var del=document.createElement('button');del.className='del';del.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    del.onclick=function(){state.schedule=state.schedule.filter(function(x){return x.id!==s.id});save();refreshAll();};
+    tm.onclick=function(){editSched(s,'time',tm)};
+    lb.onclick=function(){editSched(s,'label',lb)};
+    row.appendChild(tm);row.appendChild(lb);row.appendChild(del);
+    box.appendChild(row);
+  });
+}
+function editSched(s,key,el){
+  var inp=document.createElement('input');
+  inp.value=s[key];inp.type=(key==='time'?'time':'text');
+  el.replaceWith(inp);inp.focus();
+  var commit=function(){s[key]=inp.value.trim()||s[key];save();refreshAll();};
+  inp.onblur=commit;inp.onkeydown=function(e){if(e.key==='Enter')commit();if(e.key==='Escape')refreshAll();};
+}
+function addSched(){
+  state.schedule.push({id:uid(),time:'12:00',label:'新安排'});
+  save();refreshAll();
+}
+function renderCourses(){
+  var box=document.getElementById('courseList');box.innerHTML='';
+  state.courses.forEach(function(c){
+    var n=state.notes.filter(function(x){return !x.done&&x.courseId===c.id}).length;
+    var row=document.createElement('div');row.className='crow';
+    var nm=document.createElement('span');nm.className='nm';nm.textContent=c.name;
+    nm.onclick=function(){
+      var inp=document.createElement('input');
+      inp.type='text';inp.maxLength=30;inp.value=c.name;
+      inp.style.flex='1';inp.style.minWidth='0';inp.style.padding='4px 8px';inp.style.fontSize='13px';
+      inp.style.border='1px solid rgba(255,235,200,.2)';inp.style.borderRadius='6px';
+      inp.style.background='rgba(255,244,224,.08)';inp.style.color='var(--t1)';
+      nm.replaceWith(inp);inp.focus();inp.select();
+      var done=false;
+      var commit=function(){
+        if(done)return;done=true;
+        var v=inp.value.trim();
+        if(!v){
+          if(confirm('删除课程「'+c.name+'」？它的待办便签会保留但解除关联')){
+            state.courses=state.courses.filter(function(x){return x.id!==c.id});
+            state.notes.forEach(function(x){if(x.courseId===c.id)x.courseId=''});
+          }
+        }else if(v!==c.name){c.name=v;}
+        save();refreshAll();
+      };
+      inp.onblur=function(){commit()};
+      inp.onkeydown=function(e){if(e.key==='Enter'){inp.blur();}if(e.key==='Escape'){inp.value=c.name;inp.blur();}};
+    };
+    var add=document.createElement('button');add.className='ic';add.title='给这门课贴待办便签';
+    add.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+    add.onclick=function(){openNew('course',c.id)};
+    var cnt=document.createElement('span');cnt.className='cnt';cnt.textContent=n?n+' 待办':'';
+    row.appendChild(nm);row.appendChild(cnt);row.appendChild(add);
+    box.appendChild(row);
+  });
+}
+function renderWall(){
+  ['kaoyan','course','todo','life'].forEach(function(b){
+    var box=document.getElementById('notes-'+b);
+    var list=activeNotes().filter(function(n){return n.board===b});
+    document.getElementById('cnt-'+b).textContent=list.length?list.length+' 张':'';
+    box.innerHTML='';
+    if(!list.length){
+      var eh=document.createElement('div');eh.className='note empty-hint';
+      eh.textContent='这面墙还空着 · 点 + 贴一张';
+      box.appendChild(eh);return;
+    }
+    list.forEach(function(n){
+      var el=document.createElement('div');
+      el.className='note tone-'+(n.tone||'day');
+      el.style.setProperty('--rot',((n.id.charCodeAt(0)%5)-2)*0.6+'deg');
+      el.draggable=true;el.dataset.id=n.id;
+      var tx=document.createElement('div');tx.className='tx';tx.textContent=n.title;
+      var meta=document.createElement('div');meta.className='meta';
+      var d=dueLabel(n);
+      if(d){var s1=document.createElement('span');s1.className=d.cls;s1.textContent=d.txt;meta.appendChild(s1);}
+      if(n.courseId){var s2=document.createElement('span');s2.textContent='· '+courseName(n.courseId);meta.appendChild(s2);}
+      var tear=document.createElement('button');tear.className='tear';tear.title='撕下（完成并收进便签盒）';
+      tear.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V6a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 4v6h6"/></svg>';
+      tear.onclick=function(ev){ev.stopPropagation();tearNote(n.id,el);};
+      el.appendChild(tx);el.appendChild(meta);el.appendChild(tear);
+      el.ondragstart=function(e){e.dataTransfer.setData('text/plain',n.id);el.style.opacity=.4};
+      el.ondragend=function(){el.style.opacity=1};
+      box.appendChild(el);
+    });
+  });
+}
+function renderBox(){
+  var list=tornNotes();
+  document.getElementById('boxCnt').textContent=list.length;
+  document.getElementById('boxSub').textContent=list.length?'（'+list.length+' 张，可粘回）':'（空的）';
+  var box=document.getElementById('boxList');box.innerHTML='';
+  if(!list.length){box.innerHTML='<div class="empty">还没有撕下的便签——完成的事撕下来就进这儿</div>';return;}
+  list.forEach(function(n){
+    var el=document.createElement('div');el.className='box-note';
+    var tx=document.createElement('div');tx.className='tx';tx.textContent=n.title;
+    var meta=document.createElement('div');meta.className='meta';
+    meta.textContent='来自「'+boardName(n.board)+'」 · 撕于 '+new Date(n.doneAt||Date.now()).toLocaleDateString('zh-CN');
+    var acts=document.createElement('div');acts.className='acts2';
+    var bk=document.createElement('button');bk.textContent='粘回墙上';bk.onclick=function(){restoreNote(n.id)};
+    var rm=document.createElement('button');rm.className='rm';rm.textContent='彻底丢掉';
+    rm.onclick=function(){state.notes=state.notes.filter(function(x){return x.id!==n.id});save();refreshAll();};
+    acts.appendChild(bk);acts.appendChild(rm);
+    el.appendChild(tx);el.appendChild(meta);el.appendChild(acts);
+    box.appendChild(el);
+  });
+}
+function boardName(b){return {kaoyan:'考研备考',course:'学期科目',todo:'待办',life:'生活事项'}[b]||b}
+
+function renderTT(){
+  var g=document.getElementById('ttGrid');g.innerHTML='';
+  var c0=document.createElement('div');c0.className='tt-cell hd';c0.textContent='';g.appendChild(c0);
+  DAYS.forEach(function(d){var c=document.createElement('div');c.className='tt-cell hd';c.textContent=d;g.appendChild(c)});
+  for(var s=1;s<=10;s++){
+    var h=document.createElement('div');h.className='tt-cell hd';h.textContent=s;g.appendChild(h);
+    DAYKEY.forEach(function(dk){
+      var key=dk+'-'+s;
+      var c=document.createElement('div');c.className='tt-cell';
+      var v=state.timetable[key];
+      c.innerHTML=v?'<span class="cn">'+esc(v)+'</span>':'';
+      c.onclick=function(){
+        if(c.querySelector('input'))return;
+        c.innerHTML='';
+        var inp=document.createElement('input');inp.value=v||'';c.appendChild(inp);inp.focus();
+        var commit=function(){
+          var val=inp.value.trim();
+          if(val)state.timetable[key]=val;else delete state.timetable[key];
+          save();refreshAll();
+        };
+        inp.onblur=commit;inp.onkeydown=function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape')refreshAll();};
+      };
+      g.appendChild(c);
+    });
+  }
+}
+function renderCourseMgr(){
+  var box=document.getElementById('courseMgr');box.innerHTML='';
+  state.courses.forEach(function(c){
+    var row=document.createElement('div');row.className='crow';
+    var nm=document.createElement('span');nm.className='nm';nm.textContent=c.name;
+    nm.onclick=function(){
+      var inp=document.createElement('input');
+      inp.type='text';inp.maxLength=30;inp.value=c.name;
+      inp.style.flex='1';inp.style.minWidth='0';inp.style.padding='4px 8px';inp.style.fontSize='13px';
+      inp.style.border='1px solid rgba(255,235,200,.2)';inp.style.borderRadius='6px';
+      inp.style.background='rgba(255,244,224,.08)';inp.style.color='var(--t1)';
+      nm.replaceWith(inp);inp.focus();inp.select();
+      var commit=function(){
+        var v=inp.value.trim();
+        if(v){c.name=v;save();refreshAll();}
+        else{refreshAll();}
+      };
+      inp.onblur=function(){commit()};
+      inp.onkeydown=function(e){if(e.key==='Enter'){inp.blur();}if(e.key==='Escape'){refreshAll();}};
+    };
+    var del=document.createElement('button');del.className='ic';del.title='删除课程';
+    del.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    del.onclick=function(){state.courses=state.courses.filter(function(x){return x.id!==c.id});state.notes.forEach(function(x){if(x.courseId===c.id)x.courseId=''});save();refreshAll();};
+    row.appendChild(nm);row.appendChild(del);box.appendChild(row);
+  });
+  var add=document.createElement('button');add.className='btn';add.style.marginTop='6px';add.textContent='+ 加一门课';
+  add.onclick=function(){
+    var inp=document.createElement('input');
+    inp.type='text';inp.maxLength=30;inp.placeholder='输入课程名，回车添加';
+    inp.style.marginTop='6px';inp.style.width='100%';inp.style.padding='8px 10px';
+    inp.style.border='1px solid rgba(255,235,200,.2)';inp.style.borderRadius='8px';
+    inp.style.background='rgba(255,244,224,.06)';inp.style.color='var(--t1)';inp.style.fontSize='14px';
+    add.replaceWith(inp);inp.focus();
+    var commit=function(){
+      var v=inp.value.trim();
+      if(v){state.courses.push({id:uid(),name:v});save();refreshAll();}
+      else{refreshAll();}
+    };
+    inp.onblur=function(){commit()};
+    inp.onkeydown=function(e){if(e.key==='Enter'){inp.blur();}if(e.key==='Escape'){refreshAll();}};
+  };
+  box.appendChild(add);
+}
+function renderCourseOptions(){
+  var sel=document.getElementById('nCourse');
+  var cur=sel.value;
+  sel.innerHTML='<option value="">（不关联）</option>';
+  state.courses.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o)});
+  sel.value=cur;
+}
+function esc(s){return String(s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+
+function refreshAll(){
+  renderCountdown();renderSched();renderCourses();renderWall();renderBox();renderTT();renderCourseMgr();renderCourseOptions();
+}
+
+/* ================= 行为层（改数据 → 保存 → refreshAll） ================= */
+function openNew(board,courseId){
+  document.getElementById('nTitle').value='';
+  document.getElementById('nBoard').value=board||'todo';
+  document.getElementById('nDue').value='';
+  document.getElementById('nTime').value='';
+  renderCourseOptions();
+  if(courseId)document.getElementById('nCourse').value=courseId;
+  openMask('mNew');
+  setTimeout(function(){document.getElementById('nTitle').focus()},80);
+}
+function addNote(){
+  var t=document.getElementById('nTitle').value.trim();
+  if(!t){alert('便签不能是空的');return;}
+  var b=document.getElementById('nBoard').value;
+  var tones=['morning','day','night'];
+  state.notes.push({
+    id:uid(),board:b,title:t,due:document.getElementById('nDue').value,
+    time:document.getElementById('nTime').value,courseId:document.getElementById('nCourse').value,
+    done:false,tone:tones[Math.floor(Math.random()*3)],createdAt:Date.now()
+  });
+  save();closeMask('mNew');refreshAll();
+  // 落贴动画
+  var zone=document.getElementById('notes-'+b);
+  var last=zone.lastElementChild;
+  if(last){last.classList.add('anim-in');}
+}
+function tearNote(id,el){
+  el.classList.add('anim-tear');
+  setTimeout(function(){
+    var n=state.notes.filter(function(x){return x.id===id})[0];
+    if(n){n.done=true;n.doneAt=Date.now();}
+    save();refreshAll();
+  },480);
+}
+function restoreNote(id){
+  var n=state.notes.filter(function(x){return x.id===id})[0];
+  if(!n)return;
+  n.done=false;n.doneAt=null;
+  save();closeMask('mBox');refreshAll();
+  var zone=document.getElementById('notes-'+n.board);
+  var els=zone.querySelectorAll('.note');
+  for(var i=0;i<els.length;i++){
+    if(els[i].dataset.id===id){els[i].classList.add('anim-back');break;}
+  }
+}
+function clearBox(){
+  if(!confirm('清空便签盒？撕下的便签会彻底丢掉（不可恢复）。'))return;
+  state.notes=state.notes.filter(function(n){return !n.done});
+  save();refreshAll();
+}
+function openMask(id){document.getElementById(id).classList.add('on')}
+function closeMask(id){document.getElementById(id).classList.remove('on')}
+function openTT(){openMask('mTT')}
+function openBox(){openMask('mBox')}
+function exportJSON(){
+  var blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='星之间-便签墙-'+todayISO()+'.json';a.click();
+}
+function importJSON(inp){
+  var f=inp.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var d=JSON.parse(r.result);
+      if(!d||!d.notes)throw 0;
+      if(!confirm('导入会覆盖当前全部数据，确定？'))return;
+      state=d;
+      if(!state.notes)state.notes=[];
+      if(!state.schedule)state.schedule=[];
+      if(!state.courses)state.courses=[];
+      if(!state.timetable)state.timetable={};
+      if(!state.settings)state.settings={examDate:'2026-12-19'};
+      save();refreshAll();alert('导入成功');
+    }catch(e){alert('文件格式不对');}
+    inp.value='';
+  };
+  r.readAsText(f);
+}
+
+/* ================= 拖放（桌面：便签换墙） ================= */
+['kaoyan','course','todo','life'].forEach(function(b){
+  var z=document.getElementById(b==='kaoyan'?'zone-kaoyan':'zone-'+b);
+  z.addEventListener('dragover',function(e){e.preventDefault();z.classList.add('dragover')});
+  z.addEventListener('dragleave',function(){z.classList.remove('dragover')});
+  z.addEventListener('drop',function(e){
+    e.preventDefault();z.classList.remove('dragover');
+    var id=e.dataTransfer.getData('text/plain');
+    var n=state.notes.filter(function(x){return x.id===id})[0];
+    if(n&&n.board!==b){n.board=b;save();refreshAll();}
+  });
+});
+
+/* ================= 移动端 Tab ================= */
+document.getElementById('mtabs').addEventListener('click',function(e){
+  var btn=e.target.closest('button');if(!btn)return;
+  var v=btn.dataset.v;
+  if(v==='box'){openBox();return;}   // 便签盒是浮窗，不常驻 Tab 高亮
+  document.querySelectorAll('#mtabs button').forEach(function(b){b.classList.remove('on')});
+  btn.classList.add('on');
+  var sched=document.getElementById('schedCard');
+  closeMask('mBox');
+  ['kaoyan','course','todo','life'].forEach(function(b){
+    document.getElementById('zone-'+b).style.display=(v==='all'||v===b)?'':'none';
+  });
+  sched.style.display=(v==='all')?'':'none';
+});
+
+/* ================= 启动 ================= */
+document.addEventListener('DOMContentLoaded',function(){
+  load();
+  refreshAll();
+  document.querySelectorAll('.mask').forEach(function(m){
+    m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('on')});
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.mask').forEach(function(m){m.classList.remove('on')})});
+});
+</script>
+</body>
+</html>
+
+
+</style>
+</head>
+<body>
+</body>
+</html>
