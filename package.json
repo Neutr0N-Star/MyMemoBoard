@@ -6,13 +6,13 @@
   "author": "Neutr0N_Star",
   "license": "MIT",
   "private": true,
-  "homepage": "https://github.com/Neutr0N_Star/MyMemoBoards",
+  "homepage": "https://github.com/Neutr0N-Star/MyMemoBoard",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Neutr0N_Star/MyMemoBoards.git"
+    "url": "git+https://github.com/Neutr0N-Star/MyMemoBoard.git"
   },
   "bugs": {
-    "url": "https://github.com/Neutr0N_Star/MyMemoBoards/issues"
+    "url": "https://github.com/Neutr0N-Star/MyMemoBoard/issues"
   },
   "keywords": [
     "学习",
@@ -55,8 +55,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "Neutr0N_Star",
-        "repo": "MyMemoBoards"
+        "owner": "Neutr0N-Star",
+        "repo": "MyMemoBoard"
       }
     ],
     "win": {
