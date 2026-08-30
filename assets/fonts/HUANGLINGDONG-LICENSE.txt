@@ -1,32 +1,91 @@
-字体家网站关于字体版权说明
+Copyright (c) 2020, Lingdong Huang (https://github.com/LingDong-/qiji-font),
+with Reserved Font Name "QIJIFALLBACK".
 
-付费下载字体：
+This license is copied below, and is also available with a FAQ at:
+https://openfontlicense.org/
 
-是指在字体家平台上通过付费下载的个人版非商业用途的字体，字体家平台上所有付费下载的
-字体，均是各大字体厂商与字体家平台建立了发布合作的字体品牌，有仅限于付费下载个人版；
-以及可以提供个人版付费下载和正版授权购买的字体，具体以网站实际发布为准。
 
-免费下载的字体：
+SIL OPEN FONT LICENSE
+Version 1.1 - 26 February 2007
 
-是指在字体家网站不需要通过任何付费即可下载到的字体文件，该类字体文件是本站收集于网
-络，本站不享有任何版权，仅提供给本站网友进行字体爱好交流，如您想通过免费下载的字体
-进行商业用途使用，本站强烈提醒您联系对应厂商或原作者进行版权授权购买，如因为使用了
-免费下载的字体引起了版权诉讼纠纷，本站不承担任何责任；当然，您如果是这些免费下载的
-字体原作者，如不愿意通过本站发布字体作品的话，请提供有效版权证明，我们将在48小时之
-内删除下载链接以及字体产品。
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
 
-关于字体家网站：
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded,
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
 
-字体家网站是专业发布字体的网站，是杭州贤书阁文化创意有限公司旗下网站平台。
-我们的业务：字体授权、企业字体定制、字体冠名、书法家字体制作等。
-网址：www.zitijia.com
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
 
-在字体家网站，您可以下载到各种各样的字体产品，同时也可以以特惠的价格购买到各种原创
-字体的版权使用权。每日更新，免费下载和付费下载的优质字体供您选择。
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
 
-中华签名网，专业设计签名的网站
-www.qianming.cn
+"Original Version" refers to the collection of Font Software distributed
+by the Copyright Holder(s).
 
-联系QQ：207184002
-字体家群号：275221323
-商务合作邮箱：yegy1977@qq.com
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to
+a new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION & CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any Modified
+Version, except to acknowledge the contribution(s) of the Copyright
+Holder(s) and the Author(s) or with their explicit written permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.

@@ -1,7 +1,7 @@
 {
   "name": "mymemoboards",
   "version": "1.0.0",
-  "description": "知墙 · 学习工作台——学生向便签墙学习工作台：考研/学期/待办/生活四区便签墙 + 作息侧栏 + 课程表浮窗（构成主义视觉）",
+  "description": "知墙 · 个人事务工作台——可自定义便签墙 + 作息侧栏 + 课程表浮窗 + 便签盒（构成主义视觉）",
   "main": "main.js",
   "author": "Neutr0N_Star",
   "license": "MIT",

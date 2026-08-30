@@ -18,7 +18,6 @@
   --fd:"Arial Black","Arial Bold","Impact","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
 }
 @font-face{font-family:'HuangQiJi';src:url('assets/fonts/huanglingdong-qijiti.ttf') format('truetype');font-display:swap}
-@font-face{font-family:'WenCangShuFang';src:url('assets/fonts/wencangshufang-2.ttf') format('truetype');font-display:swap}
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Roboto,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden;line-height:1.5;font-size:15px;font-weight:500}
@@ -61,8 +60,8 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .splash-logo img{width:100%;height:100%;object-fit:contain}
 .splash-studio{font-family:'HuangQiJi',serif;font-size:32px;letter-spacing:.14em;color:var(--ink)}
 .splash-right{display:flex;flex-direction:column;align-items:center;gap:8px}
-.splash-name{font-family:'WenCangShuFang',serif;font-size:128px;line-height:1;color:var(--ink);letter-spacing:.02em}
-.splash-en{font-family:'WenCangShuFang',serif;font-size:19px;letter-spacing:.24em;color:var(--red);font-weight:700}
+.splash-name{font-family:'HuangQiJi',serif;font-size:128px;line-height:1;color:var(--ink);letter-spacing:.02em}
+.splash-en{font-family:'HuangQiJi',serif;font-size:19px;letter-spacing:.24em;color:var(--red);font-weight:700}
 .splash .rule{width:120px;height:4px;background:var(--ink);position:relative;margin-top:10px;overflow:hidden}
 .splash .rule::after{content:"";position:absolute;left:0;top:0;height:100%;width:62%;background:var(--red);animation:splashbar 1.4s ease-out}
 @keyframes splashbar{from{width:0}to{width:62%}}
@@ -1870,7 +1869,7 @@ function genReport(){
     if(!out)out=JSON.stringify(j).slice(0,3000);
     tx.value=out;
   }).catch(function(e){
-    tx.value='生成失败：'+e.message+'\n\n常见原因：\n1. Base URL 不对（要 OpenAI 兼容接口，代码会自动补 /chat/completions）\n2. 本地 Ollama 没启动或端口不对\n3. 浏览器版可能被跨域拦截，用桌面 exe 更稳\n4. API Key 错了\n\n下面是本次要发给模型的原始数据，你可以直接复制走：\n\n'+data;
+    tx.value='生成失败：'+e.message+'\n\n常见原因：\n1. Base URL 不对（要 OpenAI 兼容接口，代码会自动补 /chat/completions）\n2. 本地 Ollama 没启动或端口不对\n3. 用桌面 exe 更稳（避免本地接口跨域问题）\n4. API Key 错了\n\n下面是本次要发给模型的原始数据，你可以直接复制走：\n\n'+data;
   }).then(function(){if(btn)btn.disabled=false;});
 }
 function copyReport(){
@@ -2086,25 +2085,62 @@ function importJSON(inp){
   var f=inp.files[0];if(!f)return;
   var r=new FileReader();
   r.onload=function(){
+    var d;
     try{
-      var d=JSON.parse(r.result);
-      if(!d||!d.notes)throw 0;
-      askConfirm('导入会覆盖当前全部数据，确定？',function(){
-        var oldKey=(state.settings&&state.settings.ai&&state.settings.ai.key)||'';
-        state=d;
-        // 导入文件里的 API Key 已被导出脚本脱敏，避免空串/占位符覆盖当前 Key
-        if(state.settings&&state.settings.ai&&(!state.settings.ai.key||state.settings.ai.key==='***')){
-          state.settings.ai.key=oldKey;
-        }
-        if(!state.notes)state.notes=[];
-        if(!state.schedule)state.schedule=[];
-        if(!state.courses)state.courses=[];
-        if(!state.timetable)state.timetable={};
-        migrateSettings();
-        migrateNotes();
-        save();refreshAll();toast('导入成功');
-      });
-    }catch(e){toast('文件格式不对');}
+      d=JSON.parse(r.result);
+    }catch(e){
+      toast('文件不是合法的 JSON，无法导入');
+      inp.value='';
+      return;
+    }
+    // 结构校验：根必须是对象，notes 必须是数组；其余字段若提供也必须类型正确
+    if(!d||typeof d!=='object'||Array.isArray(d)){
+      toast('文件结构不正确（根节点应为对象），无法导入');
+      inp.value='';
+      return;
+    }
+    if(!Array.isArray(d.notes)){
+      toast('文件缺少有效的便签列表（notes 应为数组），无法导入');
+      inp.value='';
+      return;
+    }
+    if(d.schedule!==undefined&&!Array.isArray(d.schedule)){
+      toast('作息数据格式异常（schedule 应为数组），无法导入');
+      inp.value='';
+      return;
+    }
+    if(d.courses!==undefined&&!Array.isArray(d.courses)){
+      toast('课程数据格式异常（courses 应为数组），无法导入');
+      inp.value='';
+      return;
+    }
+    if(d.timetable!==undefined&&(typeof d.timetable!=='object'||Array.isArray(d.timetable))){
+      toast('课程表数据格式异常（timetable 应为对象），无法导入');
+      inp.value='';
+      return;
+    }
+    askConfirm('导入会覆盖当前全部数据，确定？',function(){
+      var oldKey=(state.settings&&state.settings.ai&&state.settings.ai.key)||'';
+      // 仅在校验通过、且用户确认后，才用规范化后的数据替换 state；
+      // 绝不把 state 污染成字符串/错误类型（如 {"notes":"oops"} 会被上面的校验拦截）
+      var next={
+        v:(typeof d.v==='number')?d.v:1,
+        settings:(d.settings&&typeof d.settings==='object'&&!Array.isArray(d.settings))?d.settings:undefined,
+        notes:d.notes,
+        schedule:Array.isArray(d.schedule)?d.schedule:[],
+        courses:Array.isArray(d.courses)?d.courses:[],
+        timetable:(d.timetable&&typeof d.timetable==='object'&&!Array.isArray(d.timetable))?d.timetable:{}
+      };
+      if(!next.settings)next.settings=defaultState().settings;
+      state=next;
+      // 导入文件里的 API Key 已被导出脚本脱敏，避免空串/占位符覆盖当前 Key
+      if(state.settings.ai&&(!state.settings.ai.key||state.settings.ai.key==='***')){
+        state.settings.ai.key=oldKey;
+      }
+      migrateSettings();
+      migrateNotes();
+      save();refreshAll();toast('导入成功');
+    });
     inp.value='';
   };
   r.readAsText(f);
@@ -2137,11 +2173,13 @@ function exportMD(){
       if(n.priority==='important')tags.push('重要');
       if(n.due)tags.push('截止 '+n.due);
       if(n.time)tags.push(n.time);
-      L.push('- '+(tags.length?'['+tags.join(' · ')+'] ':'')+n.title);
+      L.push('- '+(tags.length?'['+tags.join(' · ')+'] ':'')+(n.title||''));
     });
   });
   L.push('','## 作息');
-  (state.schedule||[]).forEach(function(s){L.push('- '+s.start+' '+s.label);});
+  // 作息对象的字段是 {id,time,label}（见 saveSched 里 state.schedule.push），没有 start
+  (state.schedule||[]).forEach(function(s){L.push('- '+(s.time||'')+' '+(s.label||''));});
+  if(!(state.schedule||[]).length){L.push('（空）');}
   L.push('','## 课程');
   (state.courses||[]).forEach(function(c){L.push('- '+c.name);});
   downloadText('知墙-Markdown-'+todayISO()+'.md',L.join('\n'),'text/markdown;charset=utf-8');

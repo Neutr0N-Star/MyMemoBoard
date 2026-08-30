@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    # 允许工作流创建 GitHub Release（softprops/action-gh-release 需要 contents: write）
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -37,5 +40,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            release/*.exe
+            release/*-setup.exe
+            release/latest.yml
+            release/*.blockmap
             release/SHA256SUMS.txt
