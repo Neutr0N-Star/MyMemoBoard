@@ -48,6 +48,8 @@
       "index.html",
       "assets/icon.ico",
       "assets/logo.png",
+      "assets/sext-primary-notext.png",
+      "assets/fonts/**/*",
       "LICENSE"
     ],
     "publish": [

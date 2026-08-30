@@ -13,8 +13,8 @@
 **SHA256 校验**
 
 ```
-SHA256 (My-Memo-Boards-1.0.0-portable.exe) = 520f05bb7ef43ba3df44b64c343da3740c5a39cc7229e284758ff67acf430cdf
-SHA256 (My-Memo-Boards-1.0.0-setup.exe) = a9f9ee7ccb3cd644939101c01b394586b528c398c5fd07d96d030bd361f04499
+SHA256 (My-Memo-Boards-1.0.0-portable.exe) = 9ad138d6f66215c165f4409205f7219b70f24f714b3e0233b7c6bca4cbce0583
+SHA256 (My-Memo-Boards-1.0.0-setup.exe) = 8bb21901718804f91913f253c807d602ba68e247d60371b2aa7bc8c26f701534
 ```
 
 ## 功能亮点
