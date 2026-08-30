@@ -482,7 +482,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
   </div>
   </div>
 
-  <!-- 便签墙：大框由 renderZones() 动态渲染，可自行增减 -->
+  <!-- 便签墙：墙面由 renderZones() 动态渲染，可自行增减 -->
   <div class="board" id="board">
     <div class="zones" id="zones"></div>
   </div>
@@ -642,7 +642,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
     <h3>帮助<button class="x" onclick="closeMask('mHelp')">×</button></h3>
     <div class="field" style="font-size:13px;line-height:1.8">
       <p><b>贴</b>：点墙上的 <b>+</b> 写便签；<b>撕下</b> = 完成归档进便签盒；<b>粘回</b> = 恢复；<b>入箱</b> = 长期归档。</p>
-      <p><b>墙面</b>：大框标题右侧 <b>×</b> 可删（点两下确认），双击墙名可改名，墙头 <b>≡</b> 可拖动换位，<b>默认</b> 按钮设默认墙。</p>
+      <p><b>墙面</b>：墙标题右侧 <b>×</b> 可删（点两下确认），双击墙名可改名，墙头 <b>≡</b> 可拖动换位，<b>默认</b> 按钮设默认墙。</p>
       <p><b>课程表</b>：顶栏「课程表」进完整编辑；节次时间可增减，点格子选课程；侧栏时间轴会实时反映撞车段。</p>
       <p><b>考试倒计时</b>：顶栏考试 pill 可改名字与日期，超宽自动换行。</p>
       <p><b>每日任务</b>：撕掉后第二天自动贴回；不想每天回来用便签盒「永久移除」。</p>
@@ -1176,7 +1176,7 @@ function renderZones(){
       zh.appendChild(tt);
     }
     var isDef=state.settings.defaultBoard===b;
-    var def=document.createElement('button');def.className='zdef'+(isDef?' on':'');def.title=isDef?'这是默认墙 · 删别的大框时便签自动挪到这里':'设为大框默认墙';
+    var def=document.createElement('button');def.className='zdef'+(isDef?' on':'');def.title=isDef?'这是默认墙 · 删别的墙时便签自动挪到这里':'设为默认墙';
     def.textContent='默认';
     def.onclick=function(){setDefaultBoard(b);};
     zh.appendChild(def);
@@ -1196,9 +1196,9 @@ function renderZones(){
     var notes=document.createElement('div');notes.className='notes';notes.id='notes-'+b;sec.appendChild(notes);
     wrap.appendChild(sec);
   });
-  // 末尾的“+ 加大框”虚线占位
+  // 末尾的“+ 加一块墙”虚线占位
   var add=document.createElement('div');add.className='zone zone-add';add.title='加一面墙';
-  var ai=document.createElement('div');ai.className='zai';ai.textContent='+ 加大框';
+  var ai=document.createElement('div');ai.className='zai';ai.textContent='+ 加一块墙';
   add.appendChild(ai);
   add.onclick=function(){addBoard();};
   wrap.appendChild(add);
