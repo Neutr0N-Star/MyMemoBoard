@@ -2,8 +2,59 @@
 // 职责边界：只做「窗口外壳 + 数据落盘位置 + 单实例锁」三件事。
 // 业务逻辑全在 index.html（纯前端 + localStorage），主进程不介入。
 
-const { app, BrowserWindow, ipcMain, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, Notification, session, safeStorage } = require('electron');
 const path = require('path');
+const fs = require('fs');
+const { autoUpdater } = require('electron-updater');
+
+// ---------------------------------------------------------------------------
+// 0. 全局错误日志：主进程崩溃/未处理 Promise/渲染进程上报，统一写 data/logs/error.log
+// ---------------------------------------------------------------------------
+function writeErrorLog(msg){
+  try{
+    const dir = path.join(app.getPath('userData'), 'logs');
+    fs.mkdirSync(dir, { recursive: true });
+    const line = '[' + new Date().toISOString() + '] ' + msg + '\n';
+    fs.appendFileSync(path.join(dir, 'error.log'), line);
+  }catch(_e){}
+}
+
+// ---------------------------------------------------------------------------
+// 0.1 文件化数据存储：state.json 原子写（临时文件 + rename），data/ 随程序走
+// ---------------------------------------------------------------------------
+function readStateFile(){
+  try{
+    const p = path.join(app.getPath('userData'), 'state.json');
+    if(fs.existsSync(p)) return fs.readFileSync(p, 'utf8');
+  }catch(_e){}
+  return null;
+}
+function writeStateFile(json){
+  try{
+    const p = path.join(app.getPath('userData'), 'state.json');
+    const tmp = p + '.tmp';
+    fs.writeFileSync(tmp, json, 'utf8');
+    fs.renameSync(tmp, p);
+  }catch(_e){}
+}
+function saveBackup(json){
+  try{
+    const dir = path.join(app.getPath('userData'), 'backups');
+    fs.mkdirSync(dir, { recursive: true });
+    const d = new Date();
+    const day = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    fs.writeFileSync(path.join(dir, 'backup-' + day + '.json'), json, 'utf8');
+    // 只保留最近 7 份
+    fs.readdirSync(dir).filter(function(f){ return /^backup-\d{4}-\d{2}-\d{2}\.json$/.test(f); })
+      .sort().reverse().slice(7).forEach(function(f){ try{ fs.unlinkSync(path.join(dir, f)); }catch(_e){} });
+  }catch(_e){}
+}
+process.on('uncaughtException', function(err){
+  writeErrorLog('uncaughtException: ' + ((err && err.stack) || err));
+});
+process.on('unhandledRejection', function(reason){
+  writeErrorLog('unhandledRejection: ' + (reason && (reason.stack || reason.message || reason)));
+});
 
 // Windows 上系统通知要能正常弹出，需先声明 AppUserModelID（与 package.json 的 build.appId 一致）
 if (process.platform === 'win32') {
@@ -34,6 +85,27 @@ if (process.platform === 'win32') {
 //    第二次启动时，把已开的窗口拉回前台。
 // ---------------------------------------------------------------------------
 let win = null;
+let updateStatus = 'idle';
+
+// ---------------------------------------------------------------------------
+// 2.5 自动更新：GitHub Releases 作为更新源（打包版才启用）
+// ---------------------------------------------------------------------------
+function initAutoUpdate(){
+  try{
+    if(!app.isPackaged) return;
+    autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
+    autoUpdater.on('update-available', function(info){ updateStatus = 'available:' + info.version; });
+    autoUpdater.on('update-downloaded', function(info){
+      updateStatus = 'downloaded:' + info.version;
+      if(win && Notification.isSupported()){
+        new Notification({ title: '星之间更新已就绪', body: '重启后生效（v' + info.version + '）' }).show();
+      }
+    });
+    autoUpdater.on('error', function(){ updateStatus = 'error'; });
+    autoUpdater.checkForUpdates().catch(function(){});
+  }catch(_e){}
+}
 const gotLock = app.requestSingleInstanceLock();
 
 if (!gotLock) {
@@ -74,6 +146,11 @@ function createWindow() {
   win.setMenuBarVisibility(false);
 
   win.loadFile(path.join(__dirname, 'index.html'));
+
+  // 星之间是纯本地单页应用：阻止一切页面跳转，防止意外导航/外链打开
+  win.webContents.on('will-navigate', (event, url) => {
+    event.preventDefault();
+  });
 
   // 兜底防御：星之间无外链，禁止任何形式的新窗口弹出
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
@@ -128,7 +205,53 @@ ipcMain.handle('set-autostart', (_e, on) => {
   }
 });
 
-app.whenReady().then(createWindow);
+ipcMain.handle('report-error', (_e, msg) => {
+  writeErrorLog('renderer: ' + msg);
+  return true;
+});
+
+ipcMain.handle('encrypt-text', (_e, text) => {
+  try{
+    if(!safeStorage.isEncryptionAvailable()) return null;
+    return 'enc:' + safeStorage.encryptString(String(text || '')).toString('base64');
+  }catch(_e){ return null; }
+});
+
+ipcMain.handle('decrypt-text', (_e, enc) => {
+  try{
+    if(!enc || String(enc).indexOf('enc:') !== 0) return String(enc || '');
+    if(!safeStorage.isEncryptionAvailable()) return '';
+    return safeStorage.decryptString(Buffer.from(String(enc).slice(4), 'base64'));
+  }catch(_e){ return ''; }
+});
+
+ipcMain.on('load-state-sync', (e) => {
+  e.returnValue = readStateFile();
+});
+
+ipcMain.on('save-state', (_e, json) => {
+  writeStateFile(String(json || ''));
+});
+
+ipcMain.on('backup-state', (_e, json) => {
+  saveBackup(String(json || ''));
+});
+
+ipcMain.handle('check-update', function(){
+  if(!app.isPackaged) return { available:false, status:'dev', message:'开发模式不检查更新' };
+  return autoUpdater.checkForUpdates().then(function(r){
+    return { available: !!r, version: r && r.updateInfo && r.updateInfo.version, status: updateStatus };
+  }).catch(function(e){
+    return { available:false, status:'error', message:String((e && e.message) || e) };
+  });
+});
+
+app.whenReady().then(function(){
+  // 最小权限原则：拒绝所有页面权限请求（摄像头/麦克风/地理位置等），页面无需这些能力
+  session.defaultSession.setPermissionRequestHandler(function(_wc, _permission, callback){ callback(false); });
+  createWindow();
+  initAutoUpdate();
+});
 
 // Windows：关窗即退出（不做 macOS 那套驻留）
 app.on('window-all-closed', () => {

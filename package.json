@@ -6,9 +6,26 @@
   "author": "Neutr0N_Star",
   "license": "MIT",
   "private": true,
+  "homepage": "https://github.com/Neutr0N_Star/xingzhijian",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Neutr0N_Star/xingzhijian.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Neutr0N_Star/xingzhijian/issues"
+  },
+  "keywords": [
+    "学习",
+    "便签",
+    "考研",
+    "效率",
+    "Electron",
+    "桌面"
+  ],
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win portable",
+    "dist": "electron-builder --win",
+    "dist:store": "electron-builder --win appx",
     "dir": "electron-builder --dir"
   },
   "build": {
@@ -32,16 +49,43 @@
       "assets/icon.ico",
       "LICENSE"
     ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Neutr0N_Star",
+        "repo": "xingzhijian"
+      }
+    ],
     "win": {
-      "target": ["portable"],
+      "target": [
+        "portable",
+        "nsis"
+      ],
       "signAndEditExecutable": false
     },
     "portable": {
       "artifactName": "XingZhiJian-${version}-portable.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "星之间",
+      "artifactName": "XingZhiJian-${version}-setup.${ext}"
+    },
+    "appx": {
+      "applicationId": "com.neutronstar.xingzhijian",
+      "displayName": "星之间",
+      "publisherDisplayName": "Neutr0N_Star",
+      "artifactName": "XingZhiJian-${version}-store.${ext}"
     }
   },
   "devDependencies": {
     "electron": "^43.4.0",
     "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }

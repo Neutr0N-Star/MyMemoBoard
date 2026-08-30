@@ -10,5 +10,12 @@ contextBridge.exposeInMainWorld('desktop', {
   getTop: () => ipcRenderer.invoke('get-top'),
   notify: (title, body) => ipcRenderer.invoke('notify', { title, body }),
   getAutoStart: () => ipcRenderer.invoke('get-autostart'),
-  setAutoStart: (on) => ipcRenderer.invoke('set-autostart', !!on)
+  setAutoStart: (on) => ipcRenderer.invoke('set-autostart', !!on),
+  reportError: (msg) => ipcRenderer.invoke('report-error', String(msg || '').slice(0, 4000)),
+  loadStateSync: () => ipcRenderer.sendSync('load-state-sync'),
+  saveState: (json) => ipcRenderer.send('save-state', json),
+  backupState: (json) => ipcRenderer.send('backup-state', json),
+  checkUpdate: () => ipcRenderer.invoke('check-update'),
+  encryptText: (text) => ipcRenderer.invoke('encrypt-text', text),
+  decryptText: (enc) => ipcRenderer.invoke('decrypt-text', enc)
 });

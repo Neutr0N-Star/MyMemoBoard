@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' http: https:; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>便签墙（构成主义 · 工程设计流）</title>
 <style>
@@ -546,16 +547,61 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
         <span id="autoStartHint">登录系统时自动打开星之间</span>
       </div>
     </div>
+    <div class="field"><label>自动备份（桌面版）</label>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700">
+        <input type="checkbox" id="setAutoBackup" onchange="toggleAutoBackup(this.checked)" style="width:16px;height:16px;flex:none">
+        <span id="autoBackupHint">每天自动在 data/backups/ 留一份，保留 7 天</span>
+      </div>
+    </div>
     <div class="field"><label>数据快照（每天首次打开自动存，保留 7 天）</label>
       <div id="snapList" style="display:flex;flex-direction:column;gap:6px"></div>
     </div>
+    <div class="field"><label>软件更新</label>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="checkUpdate()">检查更新</button>
+        <span style="font-size:11px;font-weight:700;opacity:.6">桌面版支持从 GitHub Releases 自动更新</span>
+      </div>
+    </div>
     <div class="field"><label>数据管理</label>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <button class="btn" onclick="exportCSV()">导出 CSV</button>
+        <button class="btn" onclick="exportMD()">导出 Markdown</button>
         <button class="btn danger" onclick="resetAll()">重置全部数据</button>
         <span style="font-size:11px;font-weight:700;opacity:.6">清空所有内容回到首次打开（不可恢复，先「导出」备份）</span>
       </div>
     </div>
-    <div class="foot"><button class="btn primary" onclick="saveSettings()">保存</button></div>
+    <div class="foot"><button class="btn" onclick="openHelp()">帮助</button><button class="btn" onclick="openAbout()">关于</button><button class="btn primary" onclick="saveSettings()">保存</button></div>
+  </div>
+</div>
+
+<!-- 帮助浮窗 -->
+<div class="mask" id="mHelp">
+  <div class="modal" style="max-width:520px">
+    <h3>帮助<button class="x" onclick="closeMask('mHelp')">×</button></h3>
+    <div class="field" style="font-size:13px;line-height:1.8">
+      <p><b>贴</b>：点墙上的 <b>+</b> 写便签；<b>撕下</b> = 完成归档进便签盒；<b>粘回</b> = 恢复；<b>入箱</b> = 长期归档。</p>
+      <p><b>墙面</b>：大框标题右侧 <b>×</b> 可删（点两下确认），双击墙名可改名，墙头 <b>≡</b> 可拖动换位，<b>默认</b> 按钮设默认墙。</p>
+      <p><b>课程表</b>：顶栏「课程表」进完整编辑；节次时间可增减，点格子选课程；侧栏时间轴会实时反映撞车段。</p>
+      <p><b>考试倒计时</b>：顶栏考试 pill 可改名字与日期，超宽自动换行。</p>
+      <p><b>每日任务</b>：撕掉后第二天自动贴回；不想每天回来用便签盒「永久移除」。</p>
+      <p><b>AI 周报</b>：设置里填 Base URL / Key / 模型，点「生成」；本地 Ollama 走 http://localhost:11435/v1。</p>
+      <p><b>备份</b>：导出 JSON（API Key 已脱敏）；桌面版可开「自动备份」到 data/backups/ 保留 7 天。</p>
+    </div>
+    <div class="foot"><button class="btn primary" onclick="closeMask('mHelp')">关闭</button></div>
+  </div>
+</div>
+<div class="mask" id="mAbout">
+  <div class="modal" style="max-width:420px">
+    <h3>关于星之间<button class="x" onclick="closeMask('mAbout')">×</button></h3>
+    <div class="field" style="font-size:13px;line-height:1.8">
+      <p><b>版本</b>：1.0.0</p>
+      <p><b>作者</b>：Neutr0N_Star（晓星）</p>
+      <p><b>工作室</b>：晷刻（Sext）通用实用软件工作室</p>
+      <p><b>许可</b>：MIT License</p>
+      <p>星之间 · 学习工作台（便签墙）——考研 / 学期 / 待办 / 生活四区便签墙，构成主义·工程设计流视觉。</p>
+      <p style="font-size:11px;opacity:.65">数据仅存本机；AI 周报仅在主动配置接口后发送。日志与版本更新见仓库。</p>
+    </div>
+    <div class="foot"><button class="btn primary" onclick="closeMask('mAbout')">关闭</button></div>
   </div>
 </div>
 
@@ -606,10 +652,27 @@ var DAYS=['一','二','三','四','五','六','日'];
 var DAYKEY=['mon','tue','wed','thu','fri','sat','sun'];
 var state=null;
 
+/* ---- 全局错误上报：桌面版写 data/logs/error.log，浏览器版静默 ---- */
+window.addEventListener('error', function(e){
+  try{
+    if(window.desktop&&window.desktop.reportError){
+      window.desktop.reportError('window.error: '+((e.message||'')+' @ '+(e.filename||'')+':'+(e.lineno||'')));
+    }
+  }catch(_e){}
+});
+window.addEventListener('unhandledrejection', function(e){
+  try{
+    if(window.desktop&&window.desktop.reportError){
+      var r=e.reason;
+      window.desktop.reportError('unhandledrejection: '+((r&&(r.stack||r.message||r))||r));
+    }
+  }catch(_e){}
+});
+
 function defaultState(){
   var s={
     v:1,
-    settings:{examDate:'',exams:[],periods:defaultPeriods(),courseFilter:'',ai:{baseUrl:'',key:'',model:'gpt-4o-mini'},notify:true,snapshots:[],boards:defaultBoards(),defaultBoard:'todo'},
+    settings:{examDate:'',exams:[],periods:defaultPeriods(),courseFilter:'',ai:{baseUrl:'',key:'',model:'gpt-4o-mini'},notify:true,autoBackup:false,snapshots:[],boards:defaultBoards(),defaultBoard:'todo'},
     notes:[],
     schedule:[],
     courses:[],
@@ -645,11 +708,16 @@ function todayDayKey(){
 }
 
 function load(){
-  try{
-    var raw=localStorage.getItem(LS);
-    if(raw){state=JSON.parse(raw);}
-    else{state=defaultState();save();}
-  }catch(e){state=defaultState();}
+  var rawLoaded=null,fileLoaded=null;
+  try{rawLoaded=localStorage.getItem(LS);}catch(e){}
+  if(window.desktop&&window.desktop.loadStateSync){
+    try{fileLoaded=window.desktop.loadStateSync();}catch(e){}
+  }
+  var src=null;
+  if(fileLoaded){try{src=JSON.parse(fileLoaded);}catch(e){src=null;}}
+  if(!src&&rawLoaded){try{src=JSON.parse(rawLoaded);}catch(e){src=null;}}
+  if(src){state=src;}
+  else{state=defaultState();save();}
   if(!state.notes)state.notes=[];
   if(!state.schedule)state.schedule=[];
   if(!state.courses)state.courses=[];
@@ -672,6 +740,7 @@ function migrateSettings(){
   if(!state.settings.ai)state.settings.ai={baseUrl:'',key:'',model:'gpt-4o-mini'};
   if(!state.settings.ai.model)state.settings.ai.model='gpt-4o-mini';
   if(state.settings.notify===undefined)state.settings.notify=true;
+  if(state.settings.autoBackup===undefined)state.settings.autoBackup=false;
   if(!state.settings.snapshots)state.settings.snapshots=[];
   if(!state.settings.boards||!state.settings.boards.length)state.settings.boards=defaultBoards();
   state.settings.boards.forEach(function(b){if(!b.id)b.id='w'+uid().slice(0,6);if(!b.name)b.name=b.id;});
@@ -680,7 +749,28 @@ function migrateSettings(){
   state.settings.boards.forEach(function(b){if(b.id===state.settings.defaultBoard)dbOk=true;});
   if(!dbOk)state.settings.defaultBoard=state.settings.boards[0].id;
 }
-function save(){localStorage.setItem(LS,JSON.stringify(state));}
+function save(){
+  var json=JSON.stringify(state);
+  try{localStorage.setItem(LS,json);}catch(e){}
+  if(window.desktop&&window.desktop.saveState){
+    try{window.desktop.saveState(json);}catch(e){}
+  }
+  if(window.desktop&&window.desktop.backupState&&state.settings&&state.settings.autoBackup){
+    try{window.desktop.backupState(json);}catch(e){}
+  }
+}
+function encryptKeyIfPossible(k){
+  if(k && window.desktop && window.desktop.encryptText){
+    return window.desktop.encryptText(k);
+  }
+  return Promise.resolve(k);
+}
+function decryptKeyIfNeeded(k){
+  if(k && String(k).indexOf('enc:')===0 && window.desktop && window.desktop.decryptText){
+    return window.desktop.decryptText(k);
+  }
+  return Promise.resolve(k);
+}
 
 /* ================= 计算层 ================= */
 function activeNotes(){return state.notes.filter(function(n){return !n.done})}
@@ -1526,8 +1616,14 @@ function refreshAll(){
 function openSettings(){
   var ai=state.settings.ai||{};
   document.getElementById('aiBase').value=ai.baseUrl||'';
-  document.getElementById('aiKey').value=ai.key||'';
   document.getElementById('aiModel').value=ai.model||'';
+  var aiKeyVal=ai.key||'';
+  document.getElementById('aiKey').value=String(aiKeyVal).indexOf('enc:')===0?'':aiKeyVal;
+  decryptKeyIfNeeded(aiKeyVal).then(function(k){
+    if(document.getElementById('mSettings').classList.contains('on')){
+      document.getElementById('aiKey').value=k||'';
+    }
+  }).catch(function(){});
   document.getElementById('setNotify').checked=!!state.settings.notify;
   renderSnapshotList();
   var asb=document.getElementById('setAutoStart'),ash=document.getElementById('autoStartHint');
@@ -1543,15 +1639,26 @@ function openSettings(){
       if(ash)ash.textContent='仅桌面版（exe）支持开机启动';
     }
   }
+  var abb=document.getElementById('setAutoBackup'),abh=document.getElementById('autoBackupHint');
+  if(abb){
+    var onB=!!state.settings.autoBackup;
+    abb.checked=onB;
+    if(window.desktop&&window.desktop.backupState){abb.disabled=false;}else{abb.disabled=true;onB=false;abb.checked=false;}
+    if(abh)abh.textContent=onB?'每天自动备份：data/backups/ 保留 7 天':'开启后每天自动在 data/backups/ 留一份，保留 7 天';
+  }
   openMask('mSettings');
 }
 function saveSettings(){
-  state.settings.ai={
-    baseUrl:document.getElementById('aiBase').value.trim(),
-    key:document.getElementById('aiKey').value.trim(),
-    model:document.getElementById('aiModel').value.trim()||'gpt-4o-mini'
-  };
-  save();closeMask('mSettings');toast('已保存');
+  var baseUrl=document.getElementById('aiBase').value.trim();
+  var keyRaw=document.getElementById('aiKey').value.trim();
+  var model=document.getElementById('aiModel').value.trim()||'gpt-4o-mini';
+  encryptKeyIfPossible(keyRaw).then(function(key){
+    state.settings.ai={baseUrl:baseUrl,key:key||keyRaw,model:model};
+    save();closeMask('mSettings');toast(keyRaw?(key&&key.indexOf('enc:')===0?'已保存（Key 已加密）':'已保存'):'已保存');
+  }).catch(function(){
+    state.settings.ai={baseUrl:baseUrl,key:keyRaw,model:model};
+    save();closeMask('mSettings');toast('已保存');
+  });
 }
 function toggleNotify(v){state.settings.notify=!!v;save();}
 function toggleAutoStart(v){
@@ -1561,6 +1668,22 @@ function toggleAutoStart(v){
     if(ash)ash.textContent=on?'已开启：登录系统时自动打开':'登录系统时自动打开星之间';
     toast(on?'已开启开机启动':'已关闭开机启动');
   }).catch(function(){toast('设置失败，请检查 exe 所在目录是否可写');});
+}
+function toggleAutoBackup(v){
+  state.settings.autoBackup=!!v;save();
+  var abh=document.getElementById('autoBackupHint');
+  if(abh)abh.textContent=v?'每天自动备份：data/backups/ 保留 7 天':'开启后每天自动在 data/backups/ 留一份，保留 7 天';
+  toast(v?'已开启自动备份':'已关闭自动备份');
+}
+function checkUpdate(){
+  if(!window.desktop||!window.desktop.checkUpdate){toast('检查更新只在桌面版里生效');return;}
+  toast('正在检查更新…');
+  window.desktop.checkUpdate().then(function(r){
+    if(r.status==='dev'){toast(r.message||'开发模式不检查更新');return;}
+    if(r.status==='error'){toast('检查更新失败：'+(r.message||'网络/仓库未配置'));return;}
+    if(r.available){toast('发现新版本 '+(r.version||'')+'，正在后台下载');}
+    else{toast('当前已是最新版本');}
+  }).catch(function(){toast('检查更新失败');});
 }
 function resetAll(){
   askConfirm('重置全部数据？所有便签、作息、课程、考试、设置都会清空，回到首次打开的样子（不可恢复，建议先导出备份）。',function(){
@@ -1621,10 +1744,12 @@ function genReport(){
   if(btn)btn.disabled=true;
   var prompt='你是一个考研备考助手。下面是我的学习工作台本周原始数据，请写一段本周复盘与下周建议。\n要求：\n1. 先说这周实际推进了什么，用具体事项，不要空话\n2. 指出明显风险：逾期事项、某面墙堆太多、某门课完全没动\n3. 给下周 3 条可执行建议，每条具体到做什么\n4. 语气克制务实，不煽情，不用感叹号，不写"你一定可以"这类话\n5. 400 字以内\n\n数据：\n'+data;
   var url=ai.baseUrl.replace(/\/+$/,'')+'/chat/completions';
-  fetch(url,{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+(ai.key||'ollama')},
-    body:JSON.stringify({model:ai.model||'gpt-4o-mini',messages:[{role:'user',content:prompt}],temperature:0.4})
+  decryptKeyIfNeeded(ai.key||'').then(function(key){
+    return fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+(key||'ollama')},
+      body:JSON.stringify({model:ai.model||'gpt-4o-mini',messages:[{role:'user',content:prompt}],temperature:0.4})
+    });
   }).then(function(r){
     if(!r.ok)throw new Error('接口返回 '+r.status);
     return r.json();
@@ -1772,6 +1897,8 @@ function foreverRemove(id){
   });
 }
 function openArchive(){openMask('mArchive')}
+function openAbout(){openMask('mAbout')}
+function openHelp(){openMask('mHelp')}
 function openTTEdit(){
   closeMask('mTT');
   renderCourseMgr();renderPeriods();renderTT2();
@@ -1803,6 +1930,7 @@ function openBox(){openMask('mBox')}
 function exportJSON(){
   var out=JSON.parse(JSON.stringify(state));
   if(out.settings&&out.settings.ai&&out.settings.ai.key)out.settings.ai.key='***';
+  out.schemaVersion=1;
   var blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='便签墙-'+todayISO()+'.json';a.click();
@@ -1833,6 +1961,43 @@ function importJSON(inp){
     inp.value='';
   };
   r.readAsText(f);
+}
+
+function downloadText(filename,text,mime){
+  var blob=new Blob([text],{type:mime||'text/plain;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+}
+function exportCSV(){
+  var rows=[['板块','标题','重要','截止','时间','课程','状态','完成时间']];
+  state.notes.forEach(function(n){
+    rows.push([
+      boardName(n.board),n.title||'',n.priority==='important'?'是':'',n.due||'',n.time||'',
+      n.courseId?courseName(n.courseId):'',n.done?(n.daily?'每日完成':'已完成'):'待办',
+      n.doneAt?new Date(n.doneAt).toLocaleString():''
+    ]);
+  });
+  var csv=rows.map(function(r){return r.map(function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';}).join(',')}).join('\r\n');
+  downloadText('星之间-便签清单-'+todayISO()+'.csv','\ufeff'+csv,'text/csv;charset=utf-8');
+}
+function exportMD(){
+  var L=['# 星之间便签墙导出','', '> 导出日期：'+todayISO(),'','## 便签（按墙）'];
+  boards().forEach(function(b){
+    L.push('','### '+b.name);
+    var ns=state.notes.filter(function(n){return n.board===b.id&&!n.done});
+    if(!ns.length){L.push('（空）');}
+    ns.forEach(function(n){
+      var tags=[];
+      if(n.priority==='important')tags.push('重要');
+      if(n.due)tags.push('截止 '+n.due);
+      if(n.time)tags.push(n.time);
+      L.push('- '+(tags.length?'['+tags.join(' · ')+'] ':'')+n.title);
+    });
+  });
+  L.push('','## 作息');
+  (state.schedule||[]).forEach(function(s){L.push('- '+s.start+' '+s.label);});
+  L.push('','## 课程');
+  (state.courses||[]).forEach(function(c){L.push('- '+c.name);});
+  downloadText('星之间-Markdown-'+todayISO()+'.md',L.join('\n'),'text/markdown;charset=utf-8');
 }
 
 /* ================= 拖放（桌面：便签换墙） ================= */
@@ -1893,6 +2058,10 @@ document.addEventListener('DOMContentLoaded',function(){
   setTimeout(function(){
     try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission();}catch(e){}
   },1500);
+  document.querySelectorAll('.mask .modal').forEach(function(m){
+    m.setAttribute('role','dialog');
+    m.setAttribute('aria-modal','true');
+  });
   document.querySelectorAll('.mask').forEach(function(m){
     m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('on')});
   });

@@ -1,0 +1,41 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Windows artifacts
+        run: npm run dist
+        env:
+          NODE_OPTIONS: ''
+
+      - name: Generate SHA256SUMS
+        shell: pwsh
+        run: |
+          $lines = Get-ChildItem release -Filter *.exe | ForEach-Object {
+            $h = (Get-FileHash -Algorithm SHA256 -Path $_.FullName).Hash.ToLower()
+            "SHA256 ($($_.Name)) = $h"
+          }
+          $lines | Set-Content -Path release/SHA256SUMS.txt -Encoding UTF8
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/*.exe
+            release/SHA256SUMS.txt

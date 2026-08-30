@@ -27,9 +27,10 @@
 | 便签盒 / 收纳箱 | 撕下的进便签盒，满一周自动入收纳箱（也可手动），盒与箱都能粘回墙上或彻底丢掉 |
 | 现在指针 | 时间轴上一条红线 + 红方块标出此刻，5 分钟挪一次；侧栏「明」按钮切到明天预览 |
 | 每日任务 | 一类特殊便签，撕掉后**第二天自动贴回**，永不自动入箱；想撤掉用「永久移除」才进收纳箱 |
-| AI 周报 | 左下角一键生成本周复盘，Base URL / Key / 模型自己填（支持本地 Ollama） |
-| 桌面能力（仅 exe） | 窗口置顶、上课与截止前系统通知、设置里可开启开机启动 |
-| 数据 | localStorage 自动保存；导出 / 导入 JSON；每天自动存快照，保留 7 天可回滚 |
+| AI 周报 | 左下角一键生成本周复盘，Base URL / Key / 模型自己填（支持本地 Ollama）；桌面版 Key 用系统加密保存 |
+| 桌面能力（仅 exe） | 窗口置顶、上课与截止前系统通知、设置里可开启开机启动、自动更新（GitHub Releases） |
+| 数据 | localStorage 自动保存 + 桌面版文件化存储（`data/state.json` 原子写）；导出 / 导入 JSON（API Key 脱敏）；CSV / Markdown 导出；每天自动存快照，保留 7 天；可选自动备份到 `data/backups/` 保留 7 天 |
+| 帮助 / 关于 | 设置里「帮助」「关于」浮窗；根目录 `CHANGELOG.md` |
 
 **操作语义**：贴 = 新增，撕下 = 完成归档，粘回 = 恢复，入箱 = 长期归档。无「去处理」按钮，只有写与撕。
 
@@ -50,11 +51,13 @@
 
 **倒计时里程碑**：剩余天数自动分档——百日（≤100）/ 冲刺（≤50）/ 临考（≤30）/ 最后一周（≤7），pill 从钢蓝一路变到红底，最后一周整块反白。
 
-**AI 周报**：只填 Base URL / Key / 模型名，走 OpenAI 兼容的 `/v1/chat/completions`。本地跑了 Ollama 就填 `http://localhost:11435/v1`，不花钱。生成失败时会把本来要发的原始数据摊开给你，方便排查（常见是端口不对，或被浏览器跨域拦——用桌面 exe 更稳）。
+**AI 周报**：只填 Base URL / Key / 模型名，走 OpenAI 兼容的 `/v1/chat/completions`。本地跑了 Ollama 就填 `http://localhost:11435/v1`，不花钱。生成失败时会把本来要发的原始数据摊开给你，方便排查（常见是端口不对，或被浏览器跨域拦——用桌面 exe 更稳）。桌面版会在保存 Key 时用系统 `safeStorage` 加密存储，不外发。
 
-**桌面 exe 专属**：顶栏「置顶」按钮 + 系统通知（上课前 5 分钟、今日待办提前 30 分钟，设置里可关），设置里还可开启「开机启动」。这些能力经 `preload.js` 用 `contextBridge` 桥接，页面仍拿不到任何 node 能力；浏览器版会自动隐藏置顶按钮、禁用开机启动项。**改动后需重新打包才生效。**
+**桌面 exe 专属**：顶栏「置顶」按钮 + 系统通知（上课前 5 分钟、今日待办提前 30 分钟，设置里可关），设置里还可开启「开机启动」「自动备份」「检查更新」。这些能力经 `preload.js` 用 `contextBridge` 桥接，页面仍拿不到任何 node 能力；浏览器版会自动隐藏置顶按钮、禁用开机启动/自动备份/检查更新项。**改动后需重新打包才生效。**
 
 **未签名提示**：当前 exe 未做代码签名，Windows SmartScreen 可能提示「未知发布者」。这是本地自用的正常现象；如需正式对外分发，建议后续配置代码签名证书。
+
+**下载与校验**：发布时建议同时提供 `SHA256SUMS.txt`。用户可运行 `Get-FileHash -Algorithm SHA256 .\XingZhiJian-1.0.0-portable.exe` 与发布页校验值对比，防止文件被篡改。完整发布说明模板见 `docs/RELEASE.md`，GitHub Pages 下载页骨架见 `docs/index.html`。
 
 **时间轴的撞车判定**：中线按 5 分钟切片，逐片判断该时刻是否同时落在「某节课」与「某段作息」内——两者都在 = 撞车（红），只有一个 = 不撞车（绿），都没有 = 空档（灰）。切片结果合并成 CSS `linear-gradient` 色标，一个 div 画出整条分段轴。这解决的真实问题是「这节课去不去」：左边有课、右边空着 → 可以去；左右都有 → 当场抉择。
 
@@ -62,7 +65,7 @@
 
 - **默认全离线**：一切便签、作息、课程、设置都只存在本机——浏览器版在浏览器 profile，桌面版在 exe 同目录 `data/`（不写 C 盘 AppData），不上传任何服务器。
 - **AI 周报**：只有你主动点「生成」时，才会把本周便签/完成/逾期/考试等摘要发往你**自己填的** OpenAI 兼容 Base URL（如本地 Ollama）。默认 Base URL 为空，不会请求网络。
-- **API Key**：你填的 Key 以明文保存在本地数据中，不会发给作者或任何第三方；**导出 JSON 时 Key 会被替换为 `***`**，导入脱敏文件不会覆盖你当前已保存的 Key。
+- **API Key**：你填的 Key 不会发给作者或任何第三方；桌面版会用系统 `safeStorage` 加密后保存在本地数据中，浏览器版保持明文（本地）；**导出 JSON 时 Key 会被替换为 `***`**，导入脱敏文件不会覆盖你当前已保存的 Key。
 - **分享 JSON 请注意**：导出文件虽已脱敏 Key，但仍含你的学习/待办数据，请勿上传到公开网盘或发给陌生人。
 
 ## 许可证
@@ -83,12 +86,13 @@
 
 ## 桌面应用模式（Electron 外壳）
 
-`index.html` 零改动，Electron 只提供一层窗口外壳。业务逻辑仍是纯前端 localStorage。
+`index.html` 零改动，Electron 提供窗口外壳 + 文件化存储 + 桌面能力桥接。业务逻辑仍在 `index.html`，桌面版把数据落到 `data/state.json`（原子写），并保留 localStorage 兼容。
 
 | 文件 | 作用 |
 |---|---|
-| `main.js` | 主进程：窗口外壳 + 数据目录绿色化 + 单实例锁 |
-| `package.json` | 应用声明与脚本（`npm start`） |
+| `main.js` | 主进程：窗口外壳 + 数据目录绿色化 + 单实例锁 + 文件存储 + 置顶/通知/自启/自动更新/错误日志 |
+| `preload.js` | contextBridge：只桥接桌面能力，页面拿不到 node |
+| `package.json` | 应用声明与脚本（`npm start` / `npm run dist` / `npm run dist:store`） |
 | `assets/icon.ico` | 构成主义图标，由 `assets/make-icon.py` 生成（改脚本即重画，可复现） |
 | `.gitignore` | 排除 `node_modules/` 与运行期数据目录 |
 
@@ -97,21 +101,23 @@
 - **数据随程序走**：开发模式存 `data-dev/`，打包后存 exe 同目录 `data/`，不写 C 盘 AppData。整个文件夹拷走即迁移，卸载不留残余。
 - **单实例锁**：重复点启动器不会开第二个窗口，而是把已有窗口拉回前台。
 - **无菜单栏**：`autoHideMenuBar` + `setMenuBarVisibility(false)`，界面保持纯粹的构成主义外观。
-- **零 node 能力**：`nodeIntegration: false` + `contextIsolation: true`，不引入任何 node 依赖。
+- **页面零 node 能力**：`nodeIntegration: false` + `contextIsolation: true`，页面只接触 preload 桥接；主进程使用 `electron-updater` 做自动更新。
 
 **启动方式**
 
 - 桌面 exe：`release\XingZhiJian-1.0.0-portable.exe`（单文件 portable，可重命名为任意文件名；双击即开，数据落在 exe 同目录 `data\`）
+- 安装版：`release\XingZhiJian-1.0.0-setup.exe`（NSIS 安装，开始菜单/快捷方式/卸载）
 - 命令行开发：`npm start`
 
-**打包为单文件 exe**
+**打包**
 
 ```bash
-npm install            # 装 electron + electron-builder
-npm run dist           # 产出 release/XingZhiJian-1.0.0-portable.exe（约 86MB，自带图标）
+npm install            # 装 electron + electron-builder + electron-updater
+npm run dist           # 产出 portable + setup（release/XingZhiJian-1.0.0-portable.exe 与 -setup.exe）
+npm run dist:store     # 产出商店用 AppX/MSIX 系包（上架前用）
 ```
 
-- 打包配置在 `package.json` 的 `build` 段（appId / icon / files 白名单 / win portable 目标）。
+- 打包配置在 `package.json` 的 `build` 段（appId / icon / files 白名单 / win portable+nsis+appx / publish GitHub）。
 - `release/` 与 `node_modules/` 已 gitignore，构建产物不入库；重打只需 `npm run dist`。
 - ⚠️ 构建环境若启用了「删除走回收站」的钩子（如本 agent 沙箱），需先 `NODE_OPTIONS=""` 清掉注入的 shim，否则临时目录清理会失败导致打包中断。
 
@@ -125,4 +131,5 @@ npm run dist           # 产出 release/XingZhiJian-1.0.0-portable.exe（约 86M
 ## 入口
 
 - 门牌：`.overview.md`；蓝图：`notes.md`；产物：`index.html` + `assets/archive/`。
-- 桌面外壳：`main.js` + `preload.js` + `package.json` + `assets/icon.ico`；打包产物 `release/XingZhiJian-1.0.0-portable.exe`。
+- 桌面外壳：`main.js` + `preload.js` + `package.json` + `assets/icon.ico`；打包产物 `release/XingZhiJian-1.0.0-portable.exe` 与 `release/XingZhiJian-1.0.0-setup.exe`。
+- 发布/合规：`LICENSE`、`THIRD_PARTY_NOTICES.md`、`CHANGELOG.md`、`SMOKE.md`、`.github/workflows/build-release.yml`。
