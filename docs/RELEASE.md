@@ -1,4 +1,4 @@
-# 星之间 v1.0.0 发布说明
+# 知墙 v1.0.0 发布说明
 
 > 发布日期：2026-08-30
 > 发布者：Neutr0N_Star（晓星）· 晷刻工作室
@@ -7,14 +7,14 @@
 
 | 平台 | 文件 | 说明 |
 |---|---|---|
-| Windows | `XingZhiJian-1.0.0-portable.exe` | 单文件便携版，数据生成在 exe 同目录 `data/` |
-| Windows | `XingZhiJian-1.0.0-setup.exe` | NSIS 安装版（开始菜单/快捷方式/卸载） |
+| Windows | `My-Memo-Boards-1.0.0-portable.exe` | 单文件便携版，数据生成在 exe 同目录 `data/` |
+| Windows | `My-Memo-Boards-1.0.0-setup.exe` | NSIS 安装版（开始菜单/快捷方式/卸载） |
 
 **SHA256 校验**
 
 ```
-SHA256 (XingZhiJian-1.0.0-portable.exe) = c175d76ec6870f211bf9fff238c46b7fb02c0c42b7cf58892901c21f19b2506a
-SHA256 (XingZhiJian-1.0.0-setup.exe) = 82a02586fc22e1262dfe3f6f7620be50d75d7f1b2db045a865a400b33e4ebd42
+SHA256 (My-Memo-Boards-1.0.0-portable.exe) = 520f05bb7ef43ba3df44b64c343da3740c5a39cc7229e284758ff67acf430cdf
+SHA256 (My-Memo-Boards-1.0.0-setup.exe) = a9f9ee7ccb3cd644939101c01b394586b528c398c5fd07d96d030bd361f04499
 ```
 
 ## 功能亮点

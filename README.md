@@ -4,7 +4,7 @@
 
 ## 快速开始
 
-**推荐 · 桌面应用**：双击 `release\XingZhiJian-1.0.0-portable.exe`（可重命名为「星之间.exe」）→ 独立窗口，无浏览器地址栏/标签页，视觉完整，自带构成主义图标。
+**推荐 · 桌面应用**：双击 `release\My-Memo-Boards-1.0.0-portable.exe`（可重命名为「知墙.exe」）→ 独立窗口，无浏览器地址栏/标签页，视觉完整，自带构成主义图标。
 
 **临时 · 浏览器**：双击 `index.html` 即可。核心功能离线运行，无需安装、无需服务器；仅可选的 AI 周报在你配置远端接口时才会产生网络请求。
 
@@ -57,7 +57,7 @@
 
 **未签名提示**：当前 exe 未做代码签名，Windows SmartScreen 可能提示「未知发布者」。这是本地自用的正常现象；如需正式对外分发，建议后续配置代码签名证书。
 
-**下载与校验**：发布时建议同时提供 `SHA256SUMS.txt`。用户可运行 `Get-FileHash -Algorithm SHA256 .\XingZhiJian-1.0.0-portable.exe` 与发布页校验值对比，防止文件被篡改。完整发布说明模板见 `docs/RELEASE.md`，GitHub Pages 下载页骨架见 `docs/index.html`。
+**下载与校验**：发布时建议同时提供 `SHA256SUMS.txt`。用户可运行 `Get-FileHash -Algorithm SHA256 .\My-Memo-Boards-1.0.0-portable.exe` 与发布页校验值对比，防止文件被篡改。完整发布说明模板见 `docs/RELEASE.md`，GitHub Pages 下载页骨架见 `docs/index.html`。
 
 **时间轴的撞车判定**：中线按 5 分钟切片，逐片判断该时刻是否同时落在「某节课」与「某段作息」内——两者都在 = 撞车（红），只有一个 = 不撞车（绿），都没有 = 空档（灰）。切片结果合并成 CSS `linear-gradient` 色标，一个 div 画出整条分段轴。这解决的真实问题是「这节课去不去」：左边有课、右边空着 → 可以去；左右都有 → 当场抉择。
 
@@ -105,15 +105,15 @@
 
 **启动方式**
 
-- 桌面 exe：`release\XingZhiJian-1.0.0-portable.exe`（单文件 portable，可重命名为任意文件名；双击即开，数据落在 exe 同目录 `data\`）
-- 安装版：`release\XingZhiJian-1.0.0-setup.exe`（NSIS 安装，开始菜单/快捷方式/卸载）
+- 桌面 exe：`release\My-Memo-Boards-1.0.0-portable.exe`（单文件 portable，可重命名为任意文件名；双击即开，数据落在 exe 同目录 `data\`）
+- 安装版：`release\My-Memo-Boards-1.0.0-setup.exe`（NSIS 安装，开始菜单/快捷方式/卸载）
 - 命令行开发：`npm start`
 
 **打包**
 
 ```bash
 npm install            # 装 electron + electron-builder + electron-updater
-npm run dist           # 产出 portable + setup（release/XingZhiJian-1.0.0-portable.exe 与 -setup.exe）
+npm run dist           # 产出 portable + setup（release/My-Memo-Boards-1.0.0-portable.exe 与 -setup.exe）
 npm run dist:store     # 产出商店用 AppX/MSIX 系包（上架前用）
 ```
 
@@ -131,5 +131,5 @@ npm run dist:store     # 产出商店用 AppX/MSIX 系包（上架前用）
 ## 入口
 
 - 门牌：`.overview.md`；蓝图：`notes.md`；产物：`index.html` + `assets/archive/`。
-- 桌面外壳：`main.js` + `preload.js` + `package.json` + `assets/icon.ico`；打包产物 `release/XingZhiJian-1.0.0-portable.exe` 与 `release/XingZhiJian-1.0.0-setup.exe`。
+- 桌面外壳：`main.js` + `preload.js` + `package.json` + `assets/icon.ico`；打包产物 `release/My-Memo-Boards-1.0.0-portable.exe` 与 `release/My-Memo-Boards-1.0.0-setup.exe`。
 - 发布/合规：`LICENSE`、`THIRD_PARTY_NOTICES.md`、`CHANGELOG.md`、`SMOKE.md`、`.github/workflows/build-release.yml`。

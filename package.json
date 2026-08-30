@@ -1,18 +1,18 @@
 {
-  "name": "xingzhijian",
+  "name": "zhiqiang",
   "version": "1.0.0",
-  "description": "星之间 · 学习工作台：考研/学期/待办/生活四区便签墙 + 作息侧栏 + 课程表浮窗（构成主义视觉）",
+  "description": "知墙 · My-Memo-Boards——学生向便签墙学习工作台：考研/学期/待办/生活四区便签墙 + 作息侧栏 + 课程表浮窗（构成主义视觉）",
   "main": "main.js",
   "author": "Neutr0N_Star",
   "license": "MIT",
   "private": true,
-  "homepage": "https://github.com/Neutr0N_Star/xingzhijian",
+  "homepage": "https://github.com/Neutr0N_Star/zhiqiang",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Neutr0N_Star/xingzhijian.git"
+    "url": "git+https://github.com/Neutr0N_Star/zhiqiang.git"
   },
   "bugs": {
-    "url": "https://github.com/Neutr0N_Star/xingzhijian/issues"
+    "url": "https://github.com/Neutr0N_Star/zhiqiang/issues"
   },
   "keywords": [
     "学习",
@@ -29,8 +29,8 @@
     "dir": "electron-builder --dir"
   },
   "build": {
-    "appId": "com.neutronstar.xingzhijian",
-    "productName": "XingZhiJian",
+    "appId": "com.neutronstar.zhiqiang",
+    "productName": "My-Memo-Boards",
     "asar": true,
     "npmRebuild": false,
     "icon": "assets/icon.ico",
@@ -47,13 +47,14 @@
       "preload.js",
       "index.html",
       "assets/icon.ico",
+      "assets/logo.png",
       "LICENSE"
     ],
     "publish": [
       {
         "provider": "github",
         "owner": "Neutr0N_Star",
-        "repo": "xingzhijian"
+        "repo": "zhiqiang"
       }
     ],
     "win": {
@@ -64,21 +65,21 @@
       "signAndEditExecutable": false
     },
     "portable": {
-      "artifactName": "XingZhiJian-${version}-portable.${ext}"
+      "artifactName": "My-Memo-Boards-${version}-portable.${ext}"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "星之间",
-      "artifactName": "XingZhiJian-${version}-setup.${ext}"
+      "shortcutName": "知墙",
+      "artifactName": "My-Memo-Boards-${version}-setup.${ext}"
     },
     "appx": {
-      "applicationId": "com.neutronstar.xingzhijian",
-      "displayName": "星之间",
+      "applicationId": "com.neutronstar.zhiqiang",
+      "displayName": "知墙",
       "publisherDisplayName": "Neutr0N_Star",
-      "artifactName": "XingZhiJian-${version}-store.${ext}"
+      "artifactName": "My-Memo-Boards-${version}-store.${ext}"
     }
   },
   "devDependencies": {

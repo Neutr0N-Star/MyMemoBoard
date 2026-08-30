@@ -1,10 +1,10 @@
-# 星之间 · 发布前冒烟验收清单
+# 知墙 · 发布前冒烟验收清单
 
 > 打 tag 发版前，用这份清单快速过一遍。能过再发，别把坑留给用户。
 
 ## 1. 基础功能
 
-- [ ] 双击 `release\XingZhiJian-1.0.0-portable.exe` 能打开独立窗口，无浏览器地址栏。
+- [ ] 双击 `release\My-Memo-Boards-1.0.0-portable.exe` 能打开独立窗口，无浏览器地址栏。
 - [ ] 首次打开是空态引导，不遗留预置数据。
 - [ ] 四面墙（考研/学期/待办/生活）+ 右上「+」能贴便签。
 - [ ] 撕下便签进便签盒；便签盒可粘回 / 彻底丢掉。
@@ -43,11 +43,11 @@
 
 ## 6. 安装包（如果发布 setup 版）
 
-- [ ] `release\XingZhiJian-1.0.0-setup.exe` 能安装。
+- [ ] `release\My-Memo-Boards-1.0.0-setup.exe` 能安装。
 - [ ] 安装后开始菜单 / 桌面快捷方式存在。
 - [ ] 卸载后不残留 `data\` 用户数据（portable 版才是数据随程序走）。
 
 ## 7. 打包一致性
 
-- [ ] `release\XingZhiJian-1.0.0-portable.exe` 与 `SHA256SUMS.txt` 哈希一致。
+- [ ] `release\My-Memo-Boards-1.0.0-portable.exe` 与 `SHA256SUMS.txt` 哈希一致。
 - [ ] `app.asar` 内含 `preload.js`、`LICENSE`，且 `index.html` / `main.js` / `preload.js` 与源码一致。

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' http: https:; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>便签墙（构成主义 · 工程设计流）</title>
+<title>知墙 · My-Memo-Boards</title>
 <style>
 /* ========== tokens · 构成主义 / 工程设计流 ========== */
 :root{
@@ -49,6 +49,29 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .glass{background:var(--white)}
 
 .wrap{max-width:none;margin:0 auto;padding:14px 24px calc(20px + env(safe-area-inset-bottom))}
+
+/* ===== 启动页 ===== */
+.splash{position:fixed;inset:0;z-index:300;background:var(--paper);display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity .45s,visibility .45s;pointer-events:auto}
+.splash.hide{opacity:0;visibility:hidden;pointer-events:none}
+.splash-box{display:flex;flex-direction:column;align-items:center;gap:12px}
+.splash-logo{width:104px;height:104px;border:2px solid var(--ink);background:#fff;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.splash-logo::before{content:"";position:absolute;top:-3px;left:-3px;width:26px;height:9px;background:var(--red)}
+.splash-logo img{width:88px;height:88px;object-fit:contain}
+.splash h1{font-size:44px;font-family:var(--fd);letter-spacing:.22em;margin:2px 0 0}
+.splash p{font-size:13px;letter-spacing:.34em;opacity:.75;font-weight:900}
+.splash .bar{width:170px;height:4px;background:var(--ink);margin-top:10px;position:relative}
+.splash .bar::after{content:"";position:absolute;left:0;top:0;height:100%;width:62%;background:var(--red);animation:splashbar 1.1s ease-out}
+@keyframes splashbar{from{width:0}to{width:62%}}
+
+/* ===== 无边框窗口自绘标题栏 ===== */
+#fbar{position:fixed;top:0;left:0;right:0;height:34px;z-index:150;display:none;align-items:center;padding-left:10px;background:var(--white);border-bottom:2px solid var(--ink);-webkit-app-region:drag;user-select:none}
+#fbar.on{display:flex}
+#fbar .ft{font-size:12px;font-weight:900;letter-spacing:.08em}
+#fbar .fx{margin-left:auto;display:flex;gap:2px;-webkit-app-region:no-drag}
+#fbar button{width:34px;height:24px;border:0;background:transparent;color:var(--ink);font-weight:900;font-size:14px;cursor:pointer}
+#fbar button:hover{background:rgba(208,52,44,.12)}
+#fbar button.close:hover{background:var(--red);color:#fff}
+body.frameless .wrap{padding-top:48px}
 
 /* ===== 顶栏（图纸图签） ===== */
 header{display:flex;align-items:center;gap:10px;padding:12px 16px 12px 104px;margin-bottom:14px;flex-wrap:wrap;background:var(--white);border:2px solid var(--ink);position:relative;min-height:92px}
@@ -360,6 +383,26 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 </div>
 <div class="papertex" aria-hidden="true"></div>
 
+<!-- 启动页 -->
+<div class="splash" id="splash">
+  <div class="splash-box">
+    <div class="splash-logo"><img src="assets/logo.png" alt="知墙 Logo"></div>
+    <h1>知墙</h1>
+    <p>MY-MEMO-BOARDS</p>
+    <div class="bar"></div>
+  </div>
+</div>
+
+<!-- 无边框窗口的自绘标题栏 -->
+<div id="fbar">
+  <span class="ft">知墙 · My-Memo-Boards</span>
+  <div class="fx">
+    <button onclick="winAct('minimize')" title="最小化">—</button>
+    <button onclick="winAct('maximize')" title="最大化/还原">□</button>
+    <button class="close" onclick="winAct('close')" title="关闭">×</button>
+  </div>
+</div>
+
 <!-- hidden SVG defs：feTurbulence 极淡纸感 + 工程符号 -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <filter id="paperNoise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0.09 0 0 0 0 0.09 0 0 0 0 0.11 0 0 0 0.5 0"/></filter>
@@ -544,13 +587,23 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
     <div class="field"><label>开机启动（桌面版）</label>
       <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700">
         <input type="checkbox" id="setAutoStart" onchange="toggleAutoStart(this.checked)" style="width:16px;height:16px;flex:none">
-        <span id="autoStartHint">登录系统时自动打开星之间</span>
+        <span id="autoStartHint">登录系统时自动打开知墙</span>
       </div>
     </div>
     <div class="field"><label>自动备份（桌面版）</label>
       <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700">
         <input type="checkbox" id="setAutoBackup" onchange="toggleAutoBackup(this.checked)" style="width:16px;height:16px;flex:none">
         <span id="autoBackupHint">每天自动在 data/backups/ 留一份，保留 7 天</span>
+      </div>
+    </div>
+    <div class="field"><label>窗口模式（桌面版）</label>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700">
+        <select id="winMode" onchange="setWinMode(this.value)" style="border:1.5px solid var(--ink);border-radius:0;background:#fff;padding:6px 8px;font-weight:700">
+          <option value="window">普通窗口（窗口化）</option>
+          <option value="fullscreen">全屏</option>
+          <option value="frameless">无边框</option>
+        </select>
+        <span style="font-size:11px;font-weight:700;opacity:.65">无边框模式需重启生效</span>
       </div>
     </div>
     <div class="field"><label>数据快照（每天首次打开自动存，保留 7 天）</label>
@@ -592,13 +645,13 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 </div>
 <div class="mask" id="mAbout">
   <div class="modal" style="max-width:420px">
-    <h3>关于星之间<button class="x" onclick="closeMask('mAbout')">×</button></h3>
+    <h3>关于知墙<button class="x" onclick="closeMask('mAbout')">×</button></h3>
     <div class="field" style="font-size:13px;line-height:1.8">
       <p><b>版本</b>：1.0.0</p>
       <p><b>作者</b>：Neutr0N_Star（晓星）</p>
       <p><b>工作室</b>：晷刻（Sext）通用实用软件工作室</p>
       <p><b>许可</b>：MIT License</p>
-      <p>星之间 · 学习工作台（便签墙）——考研 / 学期 / 待办 / 生活四区便签墙，构成主义·工程设计流视觉。</p>
+      <p>知墙 · My-Memo-Boards（便签墙）——考研 / 学期 / 待办 / 生活四区便签墙，构成主义·工程设计流视觉。</p>
       <p style="font-size:11px;opacity:.65">数据仅存本机；AI 周报仅在主动配置接口后发送。日志与版本更新见仓库。</p>
     </div>
     <div class="foot"><button class="btn primary" onclick="closeMask('mAbout')">关闭</button></div>
@@ -672,7 +725,7 @@ window.addEventListener('unhandledrejection', function(e){
 function defaultState(){
   var s={
     v:1,
-    settings:{examDate:'',exams:[],periods:defaultPeriods(),courseFilter:'',ai:{baseUrl:'',key:'',model:'gpt-4o-mini'},notify:true,autoBackup:false,snapshots:[],boards:defaultBoards(),defaultBoard:'todo'},
+    settings:{examDate:'',exams:[],periods:defaultPeriods(),courseFilter:'',ai:{baseUrl:'',key:'',model:'gpt-4o-mini'},notify:true,autoBackup:false,winMode:'window',snapshots:[],boards:defaultBoards(),defaultBoard:'todo'},
     notes:[],
     schedule:[],
     courses:[],
@@ -741,6 +794,7 @@ function migrateSettings(){
   if(!state.settings.ai.model)state.settings.ai.model='gpt-4o-mini';
   if(state.settings.notify===undefined)state.settings.notify=true;
   if(state.settings.autoBackup===undefined)state.settings.autoBackup=false;
+  if(!state.settings.winMode)state.settings.winMode='window';
   if(!state.settings.snapshots)state.settings.snapshots=[];
   if(!state.settings.boards||!state.settings.boards.length)state.settings.boards=defaultBoards();
   state.settings.boards.forEach(function(b){if(!b.id)b.id='w'+uid().slice(0,6);if(!b.name)b.name=b.id;});
@@ -1632,7 +1686,7 @@ function openSettings(){
       asb.disabled=false;
       window.desktop.getAutoStart().then(function(on){
         asb.checked=!!on;
-        if(ash)ash.textContent=on?'已开启：登录系统时自动打开':'登录系统时自动打开星之间';
+        if(ash)ash.textContent=on?'已开启：登录系统时自动打开':'登录系统时自动打开知墙';
       }).catch(function(){asb.checked=false;});
     }else{
       asb.disabled=true;asb.checked=false;
@@ -1645,6 +1699,11 @@ function openSettings(){
     abb.checked=onB;
     if(window.desktop&&window.desktop.backupState){abb.disabled=false;}else{abb.disabled=true;onB=false;abb.checked=false;}
     if(abh)abh.textContent=onB?'每天自动备份：data/backups/ 保留 7 天':'开启后每天自动在 data/backups/ 留一份，保留 7 天';
+  }
+  var wm=document.getElementById('winMode');
+  if(wm){
+    wm.value=state.settings.winMode||'window';
+    if(!(window.desktop&&window.desktop.setWindowMode))wm.disabled=true;
   }
   openMask('mSettings');
 }
@@ -1665,7 +1724,7 @@ function toggleAutoStart(v){
   if(!window.desktop||!window.desktop.setAutoStart){toast('开机启动只在桌面 exe 里生效');return;}
   window.desktop.setAutoStart(!!v).then(function(on){
     var ash=document.getElementById('autoStartHint');
-    if(ash)ash.textContent=on?'已开启：登录系统时自动打开':'登录系统时自动打开星之间';
+    if(ash)ash.textContent=on?'已开启：登录系统时自动打开':'登录系统时自动打开知墙';
     toast(on?'已开启开机启动':'已关闭开机启动');
   }).catch(function(){toast('设置失败，请检查 exe 所在目录是否可写');});
 }
@@ -1684,6 +1743,34 @@ function checkUpdate(){
     if(r.available){toast('发现新版本 '+(r.version||'')+'，正在后台下载');}
     else{toast('当前已是最新版本');}
   }).catch(function(){toast('检查更新失败');});
+}
+function setWinMode(v){
+  if(!window.desktop||!window.desktop.setWindowMode){toast('窗口模式只在桌面版里生效');return;}
+  state.settings.winMode=v;save();
+  if(v==='fullscreen'){
+    window.desktop.setWindowMode({fullscreen:true,frameless:false}).then(function(){toast('已切换到全屏模式');}).catch(function(){toast('设置失败');});
+  }else if(v==='frameless'){
+    window.desktop.setWindowMode({fullscreen:false,frameless:true}).then(function(){toast('无边框模式将在下次启动时生效');}).catch(function(){toast('设置失败');});
+  }else{
+    window.desktop.setWindowMode({fullscreen:false,frameless:false}).then(function(){toast('已切换到普通窗口');}).catch(function(){toast('设置失败');});
+  }
+}
+function winAct(action){
+  if(window.desktop&&window.desktop.windowAction){
+    window.desktop.windowAction(action);
+  }
+}
+function applyFrameUI(){
+  var fbar=document.getElementById('fbar');
+  if(fbar){
+    if(state.settings.winMode==='frameless'&&window.desktop&&window.desktop.windowAction){
+      fbar.classList.add('on');
+      document.body.classList.add('frameless');
+    }else{
+      fbar.classList.remove('on');
+      document.body.classList.remove('frameless');
+    }
+  }
 }
 function resetAll(){
   askConfirm('重置全部数据？所有便签、作息、课程、考试、设置都会清空，回到首次打开的样子（不可恢复，建议先导出备份）。',function(){
@@ -1977,10 +2064,10 @@ function exportCSV(){
     ]);
   });
   var csv=rows.map(function(r){return r.map(function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';}).join(',')}).join('\r\n');
-  downloadText('星之间-便签清单-'+todayISO()+'.csv','\ufeff'+csv,'text/csv;charset=utf-8');
+  downloadText('知墙-便签清单-'+todayISO()+'.csv','\ufeff'+csv,'text/csv;charset=utf-8');
 }
 function exportMD(){
-  var L=['# 星之间便签墙导出','', '> 导出日期：'+todayISO(),'','## 便签（按墙）'];
+  var L=['# 知墙便签墙导出','', '> 导出日期：'+todayISO(),'','## 便签（按墙）'];
   boards().forEach(function(b){
     L.push('','### '+b.name);
     var ns=state.notes.filter(function(n){return n.board===b.id&&!n.done});
@@ -1997,7 +2084,7 @@ function exportMD(){
   (state.schedule||[]).forEach(function(s){L.push('- '+s.start+' '+s.label);});
   L.push('','## 课程');
   (state.courses||[]).forEach(function(c){L.push('- '+c.name);});
-  downloadText('星之间-Markdown-'+todayISO()+'.md',L.join('\n'),'text/markdown;charset=utf-8');
+  downloadText('知墙-Markdown-'+todayISO()+'.md',L.join('\n'),'text/markdown;charset=utf-8');
 }
 
 /* ================= 拖放（桌面：便签换墙） ================= */
@@ -2053,8 +2140,13 @@ document.addEventListener('DOMContentLoaded',function(){
   snapshot();
   refreshAll();
   initDesktop();
+  applyFrameUI();
   setInterval(renderNowMarker,5*60*1000);
   setInterval(checkNotify,60000);
+  setTimeout(function(){
+    var sp=document.getElementById('splash');
+    if(sp)sp.classList.add('hide');
+  },1300);
   setTimeout(function(){
     try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission();}catch(e){}
   },1500);

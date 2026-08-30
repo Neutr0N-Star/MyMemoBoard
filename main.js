@@ -1,4 +1,4 @@
-// 星之间 · 学习工作台 — Electron 主进程
+// 知墙 · My-Memo-Boards — Electron 主进程
 // 职责边界：只做「窗口外壳 + 数据落盘位置 + 单实例锁」三件事。
 // 业务逻辑全在 index.html（纯前端 + localStorage），主进程不介入。
 
@@ -58,7 +58,7 @@ process.on('unhandledRejection', function(reason){
 
 // Windows 上系统通知要能正常弹出，需先声明 AppUserModelID（与 package.json 的 build.appId 一致）
 if (process.platform === 'win32') {
-  app.setAppUserModelId('com.neutronstar.xingzhijian');
+  app.setAppUserModelId('com.neutronstar.zhiqiang');
 }
 
 // ---------------------------------------------------------------------------
@@ -99,7 +99,7 @@ function initAutoUpdate(){
     autoUpdater.on('update-downloaded', function(info){
       updateStatus = 'downloaded:' + info.version;
       if(win && Notification.isSupported()){
-        new Notification({ title: '星之间更新已就绪', body: '重启后生效（v' + info.version + '）' }).show();
+        new Notification({ title: '知墙更新已就绪', body: '重启后生效（v' + info.version + '）' }).show();
       }
     });
     autoUpdater.on('error', function(){ updateStatus = 'error'; });
@@ -119,19 +119,30 @@ if (!gotLock) {
   });
 }
 
+function getWinModeFromState(){
+  try{
+    const raw = readStateFile();
+    if(!raw) return 'window';
+    const s = JSON.parse(raw);
+    return (s && s.settings && s.settings.winMode) || 'window';
+  }catch(_e){ return 'window'; }
+}
+
 // ---------------------------------------------------------------------------
 // 3. 窗口
 // ---------------------------------------------------------------------------
 function createWindow() {
+  const winMode = getWinModeFromState();
   win = new BrowserWindow({
     width: 1440,
     height: 920,
     minWidth: 1080,
     minHeight: 700,
     // 与 index.html 的 <title> 保持一致，避免加载完成瞬间标题跳变
-    title: '星之间 · 便签墙（构成主义 · 工程设计流）',
+    title: '知墙 · My-Memo-Boards',
     backgroundColor: '#F2EFE6', // 与界面底稿纸同色，启动瞬间不闪白
     icon: path.join(__dirname, 'assets', 'icon.ico'),
+    frame: winMode !== 'frameless', // 无边框模式在创建时生效（重启后切换）
     autoHideMenuBar: true,
     webPreferences: {
       contextIsolation: true,
@@ -145,14 +156,18 @@ function createWindow() {
   // 去掉菜单栏（Alt 键也不再弹出），界面保持纯粹的构成主义外观
   win.setMenuBarVisibility(false);
 
+  if (winMode === 'fullscreen') {
+    win.setFullScreen(true);
+  }
+
   win.loadFile(path.join(__dirname, 'index.html'));
 
-  // 星之间是纯本地单页应用：阻止一切页面跳转，防止意外导航/外链打开
+  // 知墙是纯本地单页应用：阻止一切页面跳转，防止意外导航/外链打开
   win.webContents.on('will-navigate', (event, url) => {
     event.preventDefault();
   });
 
-  // 兜底防御：星之间无外链，禁止任何形式的新窗口弹出
+  // 兜底防御：知墙无外链，禁止任何形式的新窗口弹出
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 
   // 开发模式下保留 F12 / Ctrl+Shift+I 调试入口（打包后自动失效）
@@ -188,7 +203,7 @@ ipcMain.handle('get-top', () => (win ? win.isAlwaysOnTop() : false));
 
 ipcMain.handle('notify', (_e, { title, body }) => {
   if (!Notification.isSupported()) return false;
-  new Notification({ title: title || '星之间', body: body || '' }).show();
+  new Notification({ title: title || '知墙', body: body || '' }).show();
   return true;
 });
 
@@ -244,6 +259,26 @@ ipcMain.handle('check-update', function(){
   }).catch(function(e){
     return { available:false, status:'error', message:String((e && e.message) || e) };
   });
+});
+
+ipcMain.handle('set-window-mode', (_e, opts) => {
+  if(!win) return { ok:false };
+  if(opts && typeof opts.fullscreen === 'boolean'){
+    win.setFullScreen(opts.fullscreen);
+  }
+  return {
+    ok: true,
+    fullscreen: win.isFullScreen(),
+    frameless: !!(opts && typeof opts.frameless === 'boolean' ? opts.frameless : false)
+  };
+});
+
+ipcMain.handle('window-action', (_e, action) => {
+  if(!win) return false;
+  if(action === 'minimize') win.minimize();
+  else if(action === 'maximize') { if(win.isMaximized()) win.unmaximize(); else win.maximize(); }
+  else if(action === 'close') win.close();
+  return true;
 });
 
 app.whenReady().then(function(){

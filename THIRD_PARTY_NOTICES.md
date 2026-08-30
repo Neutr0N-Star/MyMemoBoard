@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-本文件列出星之间运行/打包涉及的主要第三方组件及其许可。完整文本以各依赖包内 LICENSE / LICENSES 文件为准。
+本文件列出知墙运行/打包涉及的主要第三方组件及其许可。完整文本以各依赖包内 LICENSE / LICENSES 文件为准。
 
 | 组件 | 用途 | License |
 |---|---|---|
