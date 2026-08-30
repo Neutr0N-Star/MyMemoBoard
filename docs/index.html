@@ -131,11 +131,11 @@
     <div class="meta-cols">
       <div class="meta-box">
         <h3>Windows 便携版</h3>
-        <p>下载 <code>知墙-1.0.0-portable.exe</code>，双击即开。数据生成在 exe 同目录 <code>data/</code>。</p>
+        <p>下载 <code>MyMemoBoards-1.0.0-portable.exe</code>，双击即开。数据生成在 exe 同目录 <code>data/</code>。</p>
       </div>
       <div class="meta-box">
         <h3>Windows 安装版</h3>
-        <p>下载 <code>知墙-1.0.0-setup.exe</code>，安装后开始菜单 / 桌面快捷方式名为「知墙」。</p>
+        <p>下载 <code>MyMemoBoards-1.0.0-setup.exe</code>，安装后开始菜单 / 桌面快捷方式名为「知墙」。</p>
       </div>
     </div>
 
@@ -152,7 +152,7 @@
     </ul>
 
     <h2>SHA256 校验</h2>
-    <pre>Get-FileHash -Algorithm SHA256 .\知墙-1.0.0-portable.exe</pre>
+    <pre>Get-FileHash -Algorithm SHA256 .\MyMemoBoards-1.0.0-portable.exe</pre>
     <p style="font-size:12.5px;font-weight:700">将输出与发布页 <code>SHA256SUMS.txt</code> 对比，一致后再运行。</p>
     <div class="warn"><b>提示：</b>当前 exe 未做代码签名，Windows SmartScreen 可能提示「Windows 已保护你的电脑」。选择「更多信息 → 仍要运行」即可。</div>
 
@@ -161,7 +161,7 @@
       <li>便签、作息、课程、设置只存本机</li>
       <li>浏览器版用 localStorage，桌面版存 exe 同目录 <code>data/</code></li>
       <li>AI 周报只在主动配置接口时发送到你自己填的 Base URL</li>
-      <li>导出 JSON 会脱敏 API Key，桌面版用系统 safeStorage 加密</li>
+      <li>导出 JSON 默认文件名为「知墙-YYYY-MM-DD.json」，且 API Key 已脱敏；桌面版用 safeStorage 加密</li>
     </ul>
 
     <footer>

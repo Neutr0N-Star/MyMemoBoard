@@ -1,5 +1,5 @@
 {
-  "name": "zhiqiang",
+  "name": "mymemoboards",
   "version": "1.0.0",
   "description": "知墙 · 学习工作台——学生向便签墙学习工作台：考研/学期/待办/生活四区便签墙 + 作息侧栏 + 课程表浮窗（构成主义视觉）",
   "main": "main.js",
@@ -29,8 +29,8 @@
     "dir": "electron-builder --dir"
   },
   "build": {
-    "appId": "com.neutronstar.zhiqiang",
-    "productName": "知墙",
+    "appId": "com.neutronstar.mymemoboards",
+    "productName": "MyMemoBoards",
     "asar": true,
     "npmRebuild": false,
     "icon": "assets/icon.ico",
@@ -67,7 +67,7 @@
       "signAndEditExecutable": false
     },
     "portable": {
-      "artifactName": "知墙-${version}-portable.${ext}"
+      "artifactName": "MyMemoBoards-${version}-portable.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -75,13 +75,13 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "知墙",
-      "artifactName": "知墙-${version}-setup.${ext}"
+      "artifactName": "MyMemoBoards-${version}-setup.${ext}"
     },
     "appx": {
-      "applicationId": "com.neutronstar.zhiqiang",
+      "applicationId": "com.neutronstar.mymemoboards",
       "displayName": "知墙",
       "publisherDisplayName": "Neutr0N_Star",
-      "artifactName": "知墙-${version}-store.${ext}"
+      "artifactName": "MyMemoBoards-${version}-store.${ext}"
     }
   },
   "devDependencies": {

@@ -58,7 +58,7 @@ process.on('unhandledRejection', function(reason){
 
 // Windows 上系统通知要能正常弹出，需先声明 AppUserModelID（与 package.json 的 build.appId 一致）
 if (process.platform === 'win32') {
-  app.setAppUserModelId('com.neutronstar.zhiqiang');
+  app.setAppUserModelId('com.neutronstar.mymemoboards');
 }
 
 // ---------------------------------------------------------------------------
