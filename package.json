@@ -11,7 +11,33 @@
     "dist": "electron-builder --win portable",
     "dir": "electron-builder --dir"
   },
+  "build": {
+    "appId": "com.neutronstar.xingzhijian",
+    "productName": "XingZhiJian",
+    "asar": true,
+    "icon": "assets/icon.ico",
+    "electronDownload": {
+      "cache": ".builder-electron-cache",
+      "mirror": "https://npmmirror.com/mirrors/electron/"
+    },
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": ["portable"],
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "XingZhiJian-${version}-portable.${ext}"
+    }
+  },
   "devDependencies": {
-    "electron": "^43.4.0"
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3"
   }
 }
