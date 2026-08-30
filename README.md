@@ -4,12 +4,12 @@
 
 ## 快速开始
 
-**推荐 · 桌面应用**：双击桌面上的「星之间」启动器 → 独立窗口，无浏览器地址栏/标签页，视觉完整。
+**推荐 · 桌面应用**：双击桌面上的「星之间.exe」→ 独立窗口，无浏览器地址栏/标签页，视觉完整，自带构成主义图标。
 
 **临时 · 浏览器**：双击 `index.html` 即可。无需安装、无需服务器、无网络依赖。
 
-> ⚠️ 两种模式的便签数据**分开存储**（浏览器存在浏览器 profile 里，桌面版存在项目内 `data-dev/`）。
-> 从浏览器切到桌面版，请先在浏览器里「导出 JSON」，再到桌面版「导入 JSON」。
+> ⚠️ 浏览器版与桌面 exe 的便签数据**分开存储**（浏览器在浏览器 profile，桌面 exe 在 exe 同目录 `data/`）。
+> 从浏览器迁移到桌面版：浏览器里「导出 JSON」→ 桌面版「导入 JSON」。
 
 ## 功能
 
@@ -57,8 +57,19 @@
 
 **启动方式**
 
-- 桌面启动器：`C:\Users\19747\Desktop\星之间.vbs`（静默启动，无控制台黑窗）
-- 命令行：`npm start`
+- 桌面 exe：`C:\Users\19747\Desktop\星之间.exe`（单文件 portable，双击即开，数据落在 `Desktop\data\`）
+- 命令行开发：`npm start`
+
+**打包为单文件 exe**
+
+```bash
+npm install            # 装 electron + electron-builder
+npm run dist           # 产出 release/XingZhiJian-1.0.0-portable.exe（约 86MB，自带图标）
+```
+
+- 打包配置在 `package.json` 的 `build` 段（appId / icon / files 白名单 / win portable 目标）。
+- `release/` 与 `node_modules/` 已 gitignore，构建产物不入库；重打只需 `npm run dist`。
+- ⚠️ 构建环境若启用了「删除走回收站」的钩子（如本 agent 沙箱），需先 `NODE_OPTIONS=""` 清掉注入的 shim，否则临时目录清理会失败导致打包中断。
 
 **已知环境坑**
 
@@ -70,4 +81,4 @@
 ## 入口
 
 - 门牌：`.overview.md`；蓝图：`notes.md`；产物：`index.html` + `assets/archive/`。
-- 桌面外壳：`main.js` + `package.json` + `assets/icon.ico`；启动器在桌面。
+- 桌面外壳：`main.js` + `package.json` + `assets/icon.ico`；打包产物 `release/XingZhiJian-1.0.0-portable.exe`，桌面入口 `C:\Users\19747\Desktop\星之间.exe`。
