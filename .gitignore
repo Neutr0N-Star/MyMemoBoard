@@ -14,3 +14,6 @@ dist/
 # electron-builder 缓存
 .builder-cache/
 .builder-electron-cache/
+
+# WorkBuddy 工件目录（不入库）
+.workbuddy/
