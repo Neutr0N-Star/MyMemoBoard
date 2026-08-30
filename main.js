@@ -2,7 +2,7 @@
 // 职责边界：只做「窗口外壳 + 数据落盘位置 + 单实例锁」三件事。
 // 业务逻辑全在 index.html（纯前端 + localStorage），主进程不介入。
 
-const { app, BrowserWindow, ipcMain, Notification, session, safeStorage } = require('electron');
+const { app, BrowserWindow, ipcMain, Notification, session, safeStorage, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { autoUpdater } = require('electron-updater');
@@ -96,6 +96,7 @@ function initAutoUpdate(){
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
     autoUpdater.on('update-available', function(info){ updateStatus = 'available:' + info.version; });
+    autoUpdater.on('update-not-available', function(){ updateStatus = 'up-to-date'; });
     autoUpdater.on('update-downloaded', function(info){
       updateStatus = 'downloaded:' + info.version;
       if(win && Notification.isSupported()){
@@ -248,13 +249,75 @@ ipcMain.on('backup-state', (_e, json) => {
   saveBackup(String(json || ''));
 });
 
-ipcMain.handle('check-update', function(){
+// 语义化版本号比较：返回 1/0/-1（供 check-update 判断是否真有新版）
+function compareVersions(a, b){
+  const pa = String(a || '').split('.').map(x => parseInt(x, 10) || 0);
+  const pb = String(b || '').split('.').map(x => parseInt(x, 10) || 0);
+  const n = Math.max(pa.length, pb.length);
+  for(let i = 0; i < n; i++){
+    const x = pa[i] || 0, y = pb[i] || 0;
+    if(x > y) return 1;
+    if(x < y) return -1;
+  }
+  return 0;
+}
+
+ipcMain.handle('check-update', async function(){
   if(!app.isPackaged) return { available:false, status:'dev', message:'开发模式不检查更新' };
-  return autoUpdater.checkForUpdates().then(function(r){
-    return { available: !!r, version: r && r.updateInfo && r.updateInfo.version, status: updateStatus };
-  }).catch(function(e){
+  try{
+    const r = await autoUpdater.checkForUpdates();
+    const remote = r && r.updateInfo && r.updateInfo.version;
+    const local = app.getVersion();
+    // 关键修复：用真实版本号比较，而不是 !!(r)（r 只要检查成功就非空，会造成“永远有新版本”的假象）
+    return {
+      available: !!remote && compareVersions(remote, local) > 0,
+      version: remote,
+      status: updateStatus
+    };
+  }catch(e){
     return { available:false, status:'error', message:String((e && e.message) || e) };
-  });
+  }
+});
+
+ipcMain.handle('get-update-status', function(){
+  return { status: updateStatus };
+});
+
+// 字体导入：选文件 → 拷进 userData/fonts → 返回 base64 给渲染进程注册 FontFace
+ipcMain.handle('pick-font-file', async function(){
+  try{
+    const parent = (win && !win.isDestroyed()) ? win : undefined;
+    const opts = {
+      title: '选择字体文件',
+      filters: [{ name: '字体文件', extensions: ['ttf','otf','ttc','woff','woff2'] }],
+      properties: ['openFile']
+    };
+    const r = parent ? await dialog.showOpenDialog(parent, opts) : await dialog.showOpenDialog(opts);
+    if(r.canceled || !r.filePaths || !r.filePaths[0]) return null;
+    const src = r.filePaths[0];
+    const name = path.basename(src);
+    const fontsDir = path.join(app.getPath('userData'), 'fonts');
+    fs.mkdirSync(fontsDir, { recursive: true });
+    const dest = path.join(fontsDir, name);
+    if(src.toLowerCase() !== dest.toLowerCase()) fs.copyFileSync(src, dest);
+    const buf = fs.readFileSync(dest);
+    return { name: name, base64: buf.toString('base64') };
+  }catch(e){
+    return { error: String((e && e.message) || e) };
+  }
+});
+
+// 读取已保存的自定义字体（重启后重新注册用）
+ipcMain.handle('read-font-file', function(_e, name){
+  try{
+    const safe = path.basename(String(name || ''));
+    if(!safe) return null;
+    const p = path.join(app.getPath('userData'), 'fonts', safe);
+    if(!fs.existsSync(p)) return null;
+    return { name: safe, base64: fs.readFileSync(p).toString('base64') };
+  }catch(_err){
+    return null;
+  }
 });
 
 ipcMain.handle('set-window-mode', (_e, opts) => {

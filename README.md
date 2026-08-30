@@ -5,14 +5,14 @@
 ## 下载与安装
 
 - 系统要求：Windows 10 / 11
-- 安装版：`MyMemoBoards-1.0.0-setup.exe`，装完在开始菜单和桌面生成「知墙」快捷方式——**正式发布只提供这个安装包**
+- 安装版：`MyMemoBoards-1.0.1-setup.exe`，装完在开始菜单和桌面生成「知墙」快捷方式——**正式发布只提供这个安装包**
 
 > 目前 exe 没有代码签名，Windows SmartScreen 可能提示「未知发布者」。这是本地/小规模分发的正常现象，不是病毒；点「更多信息 → 仍要运行」即可。
 
 下载后可以核对一下文件：
 
 ```powershell
-Get-FileHash -Algorithm SHA256 .\MyMemoBoards-1.0.0-setup.exe
+Get-FileHash -Algorithm SHA256 .\MyMemoBoards-1.0.1-setup.exe
 ```
 
 SHA256 值放在 `release/SHA256SUMS.txt`，GitHub Release 附件里也会带上。

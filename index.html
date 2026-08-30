@@ -169,7 +169,7 @@ header::before{content:"";position:absolute;top:-2px;left:94px;width:40px;height
 .note.tone-night::before{background:var(--ink)}
 .note::after{content:"";position:absolute;top:26px;left:13px;width:1.5px;height:60px;background:var(--tick);opacity:.32;z-index:1}
 .note:hover{box-shadow:0 8px 18px -8px rgba(0,0,0,.4);z-index:2}
-.note .tx{font-family:inherit;font-size:13.5px;line-height:1.45;word-break:break-word;cursor:text;flex:1;overflow:hidden;padding:30px 12px 8px;display:flex;align-items:center;justify-content:center;text-align:center}
+.note .tx{font-family:inherit;font-size:15px;font-weight:800;line-height:1.45;word-break:break-word;cursor:text;flex:1;overflow:hidden;padding:30px 12px 8px;display:flex;align-items:center;justify-content:center;text-align:center}
 .note .meta{font-size:10.5px;color:var(--ink);display:flex;gap:8px;flex-wrap:wrap;font-weight:700;padding:6px 12px 8px;border-top:2px solid var(--ink)}
 .note .meta .over{background:var(--red);color:#fff;padding:0 5px;font-weight:900;letter-spacing:.02em}
 .note .meta .dl{background:var(--blue);color:#fff;padding:0 5px;font-weight:900;letter-spacing:.02em}
@@ -235,7 +235,7 @@ header::before{content:"";position:absolute;top:-2px;left:94px;width:40px;height
 .box-list{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .box-note{position:relative;padding:10px 12px;background:#fff;border:1.5px solid var(--ink);box-shadow:3px 3px 0 rgba(23,23,26,.16)}
 .box-note::before{content:"";position:absolute;top:-1.5px;left:-1.5px;width:22px;height:7px;background:var(--red)}
-.box-note .tx{font-size:13px;color:var(--ink);font-weight:700}
+.box-note .tx{font-size:15px;color:var(--ink);font-weight:800}
 .box-note .meta{font-size:11px;color:var(--ink);font-weight:700;margin-top:4px;border-top:1px dashed var(--ink);padding-top:4px}
 .box-note .acts2{display:flex;gap:6px;margin-top:8px}
 .box-note .acts2 button{flex:1;min-height:34px;border:1.5px solid var(--ink);border-radius:0;font-size:12px;font-weight:900;background:var(--white);color:var(--ink)}
@@ -619,6 +619,14 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
         <span style="font-size:11px;font-weight:700;opacity:.6">桌面版支持从 GitHub Releases 自动更新</span>
       </div>
     </div>
+    <div class="field"><label>字体（整个应用生效）</label>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <select id="fontPreset" style="font-size:14px;font-weight:700;padding:5px 6px;border:1.5px solid var(--ink);border-radius:0;background:#fff;color:var(--ink);max-width:220px"></select>
+        <button class="btn" onclick="importFontFile()" id="btnImportFont" style="display:none">导入字体文件…</button>
+        <button class="btn danger" onclick="removeCustomFont()" id="btnRmFont" style="display:none">移除自定义字体</button>
+        <span id="fontHint" style="font-size:11px;font-weight:700;opacity:.6"></span>
+      </div>
+    </div>
     <div class="field"><label>程序</label>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <button class="btn danger" onclick="quitApp()">退出程序</button>
@@ -657,7 +665,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
   <div class="modal" style="max-width:420px">
     <h3>关于知墙<button class="x" onclick="closeMask('mAbout')">×</button></h3>
     <div class="field" style="font-size:13px;line-height:1.8">
-      <p><b>版本</b>：1.0.0</p>
+      <p><b>版本</b>：1.0.1</p>
       <p><b>作者</b>：Neutr0N_Star（晓星）</p>
       <p><b>工作室</b>：晷刻（Sext）通用实用软件工作室</p>
       <p><b>许可</b>：MIT License</p>
@@ -736,7 +744,7 @@ window.addEventListener('unhandledrejection', function(e){
 function defaultState(){
   var s={
     v:1,
-    settings:{examDate:'',exams:[],periods:defaultPeriods(),courseFilter:'',ai:{baseUrl:'',key:'',model:'gpt-4o-mini'},notify:true,autoBackup:false,winMode:'frameless',snapshots:[],boards:defaultBoards(),defaultBoard:'todo'},
+    settings:{examDate:'',exams:[],periods:defaultPeriods(),courseFilter:'',ai:{baseUrl:'',key:'',model:'gpt-4o-mini'},notify:true,autoBackup:false,font:{mode:'default',custom:''},winMode:'frameless',snapshots:[],boards:defaultBoards(),defaultBoard:'todo'},
     notes:[],
     schedule:[],
     courses:[],
@@ -806,6 +814,9 @@ function migrateSettings(){
   if(state.settings.notify===undefined)state.settings.notify=true;
   if(state.settings.autoBackup===undefined)state.settings.autoBackup=false;
   if(!state.settings.winMode)state.settings.winMode='frameless';
+  if(!state.settings.font)state.settings.font={mode:'default',custom:''};
+  if(!state.settings.font.mode)state.settings.font.mode='default';
+  if(!state.settings.font.custom)state.settings.font.custom='';
   if(!state.settings.snapshots)state.settings.snapshots=[];
   if(!state.settings.boards||!state.settings.boards.length)state.settings.boards=defaultBoards();
   state.settings.boards.forEach(function(b){if(!b.id)b.id='w'+uid().slice(0,6);if(!b.name)b.name=b.id;});
@@ -1713,12 +1724,15 @@ function openSettings(){
     if(window.desktop&&window.desktop.backupState){abb.disabled=false;}else{abb.disabled=true;onB=false;abb.checked=false;}
     if(abh)abh.textContent=onB?'每天自动备份：data/backups/ 保留 7 天':'开启后每天自动在 data/backups/ 留一份，保留 7 天';
   }
+  renderFontControls();
   openMask('mSettings');
 }
 function saveSettings(){
   var baseUrl=document.getElementById('aiBase').value.trim();
   var keyRaw=document.getElementById('aiKey').value.trim();
   var model=document.getElementById('aiModel').value.trim()||'gpt-4o-mini';
+  var sel=document.getElementById('fontPreset');
+  if(sel&&state.settings.font){state.settings.font.mode=sel.value||'default';applyFont();}
   encryptKeyIfPossible(keyRaw).then(function(key){
     state.settings.ai={baseUrl:baseUrl,key:key||keyRaw,model:model};
     save();closeMask('mSettings');toast(keyRaw?(key&&key.indexOf('enc:')===0?'已保存（Key 已加密）':'已保存'):'已保存');
@@ -1748,9 +1762,127 @@ function checkUpdate(){
   window.desktop.checkUpdate().then(function(r){
     if(r.status==='dev'){toast(r.message||'开发模式不检查更新');return;}
     if(r.status==='error'){toast('检查更新失败：'+(r.message||'网络/仓库未配置'));return;}
-    if(r.available){toast('发现新版本 '+(r.version||'')+'，正在后台下载');}
-    else{toast('当前已是最新版本');}
+    if(r.available){
+      toast('发现新版本 '+(r.version||'')+'，正在后台下载…');
+      pollUpdateStatus();
+    }else{
+      toast('当前已是最新版本');
+    }
   }).catch(function(){toast('检查更新失败');});
+}
+var updatePollTimer=null;
+function pollUpdateStatus(){
+  if(updatePollTimer)clearInterval(updatePollTimer);
+  updatePollTimer=setInterval(function(){
+    if(!window.desktop||!window.desktop.getUpdateStatus){clearInterval(updatePollTimer);return;}
+    window.desktop.getUpdateStatus().then(function(r){
+      var s=(r&&r.status)||'';
+      if(s.indexOf('downloaded:')===0){
+        clearInterval(updatePollTimer);
+        toast('更新已下载（v'+s.split(':')[1]+'），重启后生效');
+      }else if(s==='error'){
+        clearInterval(updatePollTimer);
+        toast('后台下载失败，请稍后重试');
+      }
+    }).catch(function(){});
+  },2000);
+}
+
+// ===== 自选字体（整个应用生效，含标题）=====
+function applyFont(){
+  var f=(state.settings&&state.settings.font)||{};
+  var root=document.documentElement;
+  var fam=null;
+  if(f.mode==='custom'&&f.custom)fam='XZCustomFont';
+  else if(f.mode&&f.mode!=='default')fam=f.mode;
+  if(!fam){
+    root.style.removeProperty('--fd');
+    document.body.style.removeProperty('font-family');
+    return;
+  }
+  var q='"'+fam+'","Microsoft YaHei",sans-serif';
+  root.style.setProperty('--fd',q);
+  document.body.style.fontFamily=q;
+}
+var XZCustomReady=false;
+function b64ToArrayBuffer(b64){
+  var bin=atob(b64),len=bin.length,arr=new Uint8Array(len);
+  for(var i=0;i<len;i++)arr[i]=bin.charCodeAt(i);
+  return arr.buffer;
+}
+function registerCustomFont(name,b64){
+  return new Promise(function(resolve,reject){
+    try{
+      if(XZCustomReady){resolve();return;}
+      var face=new FontFace('XZCustomFont',b64ToArrayBuffer(b64));
+      face.load().then(function(){
+        document.fonts.add(face);
+        XZCustomReady=true;
+        resolve();
+      }).catch(function(e){reject(e);});
+    }catch(e){reject(e);}
+  });
+}
+function importFontFile(){
+  if(!window.desktop||!window.desktop.pickFontFile){toast('导入字体只在桌面版（exe）里生效');return;}
+  toast('正在选择字体…');
+  window.desktop.pickFontFile().then(function(r){
+    if(!r){toast('已取消');return;}
+    if(r.error){toast('导入失败：'+r.error);return;}
+    registerCustomFont(r.name,r.base64).then(function(){
+      state.settings.font.mode='custom';
+      state.settings.font.custom=r.name;
+      save();applyFont();renderFontControls();
+      toast('已应用自定义字体：'+r.name);
+    }).catch(function(){toast('该字体文件无法加载，已放弃');});
+  }).catch(function(){toast('导入失败');});
+}
+function removeCustomFont(){
+  state.settings.font.custom='';
+  state.settings.font.mode='default';
+  XZCustomReady=false;
+  save();applyFont();renderFontControls();
+  toast('已恢复默认字体');
+}
+function onFontPresetChange(v){
+  state.settings.font.mode=v||'default';
+  save();applyFont();renderFontControls();
+  toast('已切换字体');
+}
+function renderFontControls(){
+  var sel=document.getElementById('fontPreset'),imp=document.getElementById('btnImportFont'),rm=document.getElementById('btnRmFont'),hint=document.getElementById('fontHint');
+  if(!sel)return;
+  var f=(state.settings&&state.settings.font)||{};
+  var presets=[['default','默认（系统字体）'],['Microsoft YaHei','微软雅黑'],['SimHei','黑体'],['SimSun','宋体'],['KaiTi','楷体'],['FangSong','仿宋'],['DengXian','等线']];
+  if(f.custom)presets.push(['custom','自定义：'+f.custom]);
+  sel.innerHTML='';
+  presets.forEach(function(p){
+    var o=document.createElement('option');
+    o.value=p[0];o.textContent=p[1];
+    if((f.mode||'default')===p[0])o.selected=true;
+    sel.appendChild(o);
+  });
+  sel.onchange=function(){onFontPresetChange(sel.value);};
+  if(imp){
+    if(window.desktop&&window.desktop.pickFontFile){imp.style.display='';imp.disabled=false;}
+    else{imp.style.display='none';imp.disabled=true;}
+  }
+  if(rm){rm.style.display=(f.custom?'':'none');}
+  if(hint){
+    if(f.mode==='custom'&&f.custom)hint.textContent='当前使用自定义字体：'+f.custom;
+    else if(f.mode&&f.mode!=='default')hint.textContent='当前使用预设字体';
+    else hint.textContent='系统默认。可导入 .ttf/.otf（仅桌面版）';
+  }
+}
+function bootFont(){
+  var f=(state.settings&&state.settings.font)||{};
+  if(f.custom&&window.desktop&&window.desktop.readFontFile){
+    window.desktop.readFontFile(f.custom).then(function(r){
+      if(r&&r.base64){
+        registerCustomFont(r.name,r.base64).then(function(){applyFont();}).catch(function(){applyFont();});
+      }else{applyFont();}
+    }).catch(function(){applyFont();});
+  }else{applyFont();}
 }
 function winAct(action){
   if(window.desktop&&window.desktop.windowAction){
@@ -2214,6 +2346,7 @@ document.getElementById('mtabs').addEventListener('click',function(e){
 document.addEventListener('DOMContentLoaded',function(){
   load();
   migrateSettings();
+  bootFont();
   migrateNotes();
   reviveDailies();
   sweepStorage();
