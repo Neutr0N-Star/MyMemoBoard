@@ -27,7 +27,12 @@
 - README 数据与隐私、许可证章节
 - SHA256 校验和
 - 安全加固：CSP、禁止页面跳转、权限请求全拒、全局错误日志
+- 桌面版自动更新（基于 GitHub Releases，electron-updater）
+- 文件化数据存储（state.json 原子写，data/ 随程序走）
+- 安装包 / 卸载（NSIS 安装向导）
+- 帮助 / 关于浮窗
+- CI 自动构建 + 冒烟（GitHub Actions）
 
 ## 计划中（下一版）
 
-- 代码签名、自动更新、文件化数据存储、安装包/卸载、帮助与无障碍、CI 冒烟
+- 代码签名（当前 `signAndEditExecutable: false`，未启用）

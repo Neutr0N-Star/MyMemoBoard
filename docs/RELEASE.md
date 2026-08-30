@@ -7,21 +7,15 @@
 
 | 平台 | 文件 | 说明 |
 |---|---|---|
-| Windows | `MyMemoBoards-1.0.0-portable.exe` | 单文件便携版，数据生成在 exe 同目录 `data/` |
-| Windows | `MyMemoBoards-1.0.0-setup.exe` | NSIS 安装版（开始菜单/桌面快捷方式名：知墙） |
+| Windows | `MyMemoBoards-1.0.0-setup.exe` | NSIS 安装版（开始菜单/桌面快捷方式名：知墙）——**正式发布仅提供此安装包** |
 
-**SHA256 校验**
+> 另有 `MyMemoBoards-1.0.0-portable.exe` 单文件便携版（数据在 exe 同目录 `data/`），仅作者内测自用，**不随正式发布提供**。
 
-> ⚠️ 若重新执行 `npm run dist` 生成了新命名的构建产物，请用 `Get-FileHash` 重新填写下方哈希；旧 1.0.0 包（`My-Memo-Boards-1.0.0-*`）的哈希见 `release/SHA256SUMS.txt`。
-
-```
-SHA256 (MyMemoBoards-1.0.0-portable.exe) = <重新打包后填写>
-SHA256 (MyMemoBoards-1.0.0-setup.exe) = <重新打包后填写>
-```
+> SHA256 校验：发布包附带 `release/SHA256SUMS.txt`（GitHub Release 附件），可用 `Get-FileHash -Algorithm SHA256` 核对。
 
 ## 功能亮点
 
-- 四面便签墙（考研/学期/待办/生活） + 便签盒/收纳箱
+- 可自定义便签墙（增删改排，空态启动）+ 便签盒/收纳箱
 - 日常作息 + 完整课程表编辑（扁格子，节次可增减）
 - 考试倒计时（多节点、里程碑变色）
 - 现在指针 / 每日任务 / AI 周报（支持本地 Ollama）
