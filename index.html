@@ -207,7 +207,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 
 /* ===== 侧栏时间轴（左课程 / 右作息 / 中轴撞车着色） ===== */
 .leftcol{display:flex;flex-direction:column}
-.tl{position:relative;height:620px;margin-top:6px}
+.tl{position:relative;height:700px;margin-top:6px}
 .tl-axis{position:absolute;left:50%;top:0;bottom:0;width:7px;margin-left:-3.5px;background:var(--grid)}
 .tl-col{position:absolute;top:0;bottom:0;width:calc(50% - 12px)}
 .tl-col.l{left:0}
@@ -297,7 +297,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
   .box-list{grid-template-columns:1fr}
   .row2{grid-template-columns:1fr}
   .ttpage .cols{grid-template-columns:1fr}
-  .tl{height:520px}
+  .tl{height:580px}
 }
 @media (max-width:640px){
   .notes{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
@@ -357,7 +357,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
       <span><i style="background:#D0342C"></i>撞车</span>
       <span><i style="background:rgba(30,30,30,.18)"></i>空档</span>
     </div>
-    <div class="hint">左 = 课表课程 · 右 = 我的作息 · 点右侧方块可改</div>
+    <div class="hint">左 = 课表课程 · 右 = 我的作息 · 点右侧方块改 · 点 + 自己填时间加一段</div>
   </aside>
 
   <div class="sidecard" id="sideCard">
@@ -483,10 +483,10 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 <!-- 改作息浮窗 -->
 <div class="mask" id="mSched">
   <div class="modal" style="max-width:380px">
-    <h3>改这段作息<button class="x" onclick="closeMask('mSched')">×</button></h3>
-    <div class="field"><label>时间</label><input type="time" id="sTime"></div>
-    <div class="field"><label>内容</label><input type="text" id="sLabel" maxlength="30"></div>
-    <div class="foot"><button class="btn danger" onclick="delSched()">删掉这段</button><button class="btn primary" onclick="saveSched()">保存</button></div>
+    <h3 id="schedTitle">加一段作息<button class="x" onclick="closeMask('mSched')">×</button></h3>
+    <div class="field"><label>时间（几点开始）</label><input type="time" id="sTime"></div>
+    <div class="field"><label>这段时间干什么</label><input type="text" id="sLabel" maxlength="30" placeholder="例：自习 · 数学"></div>
+    <div class="foot"><button class="btn danger" id="schedDel" onclick="delSched()" style="display:none">删掉这段</button><button class="btn primary" onclick="saveSched()">保存</button></div>
   </div>
 </div>
 
@@ -648,7 +648,7 @@ function sortNotes(list){
 function daysLeftTo(d){var t=new Date(d+'T00:00:00');var n=new Date();n.setHours(0,0,0,0);return Math.round((t-n)/86400000)}
 
 /* ---- 时间轴：今日课程块 / 作息块 / 撞车分段 ---- */
-var TL_START=7*60,TL_END=23*60;
+var TL_START=6*60,TL_END=23*60+30;
 function periodOf(n){var r=state.settings.periods.filter(function(p){return p.n===n})[0];return r||null}
 function todayCourseBlocks(){
   var dk=todayDayKey(),out=[];
@@ -718,16 +718,37 @@ function renderTimeline(){
   AX.style.background='linear-gradient(to bottom,'+tlGradient(cb,sb)+')';
 }
 var editingSched=null;
+function setSchedTitle(txt){
+  var h3=document.getElementById('schedTitle');
+  if(h3)h3.innerHTML=txt+'<button class="x" onclick="closeMask(\'mSched\')">×</button>';
+}
 function openSchedEdit(s){
   editingSched=s;
+  setSchedTitle('改这段作息');
   document.getElementById('sTime').value=s.time;
   document.getElementById('sLabel').value=s.label;
+  var del=document.getElementById('schedDel');if(del)del.style.display='';
   openMask('mSched');
+  setTimeout(function(){
+    var el=document.getElementById('sLabel');
+    if(el&&el.focus)el.focus();
+    if(el&&el.select)el.select();
+  },80);
 }
 function saveSched(){
-  if(!editingSched)return;
-  editingSched.time=document.getElementById('sTime').value||editingSched.time;
-  editingSched.label=document.getElementById('sLabel').value.trim()||editingSched.label;
+  var tv=document.getElementById('sTime').value;
+  var lv=document.getElementById('sLabel').value.trim();
+  if(!tv){
+    alert('得填个时间，不然这段没法在时间轴上定位。');
+    var el=document.getElementById('sTime');if(el&&el.focus)el.focus();
+    return;
+  }
+  if(editingSched){
+    editingSched.time=tv;
+    editingSched.label=lv||editingSched.label;
+  }else{
+    state.schedule.push({id:uid(),time:tv,label:lv||'新安排'});
+  }
   save();closeMask('mSched');refreshAll();
 }
 function delSched(){
@@ -735,18 +756,21 @@ function delSched(){
   state.schedule=state.schedule.filter(function(x){return x.id!==editingSched.id});
   save();closeMask('mSched');refreshAll();
 }
-function nextSchedTime(){
-  if(!state.schedule.length) return '08:00';
-  var max='00:00';
-  state.schedule.forEach(function(s){ if(s.time>max) max=s.time; });
-  var p=max.split(':'), h=+p[0], m=+p[1]+30;
-  if(m>=60){h++;m-=60;}
-  if(h>23){h=23;m=59;}
-  return (h<10?'0'+h:''+h)+':'+(m<10?'0'+m:''+m);
-}
 function addSched(){
-  state.schedule.push({id:uid(),time:nextSchedTime(),label:'新安排'});
-  save();refreshAll();
+  editingSched=null;
+  var t=new Date(),m=t.getHours()*60+t.getMinutes();
+  m=Math.ceil(m/30)*30;
+  if(m<TL_START)m=TL_START;
+  if(m>TL_END)m=TL_END;
+  setSchedTitle('加一段作息');
+  document.getElementById('sTime').value=minToHHMM(m);
+  document.getElementById('sLabel').value='';
+  var del=document.getElementById('schedDel');if(del)del.style.display='none';
+  openMask('mSched');
+  setTimeout(function(){
+    var el=document.getElementById('sTime');
+    if(el&&el.focus)el.focus();
+  },80);
 }
 function renderCourses(){
   var box=document.getElementById('courseList');box.innerHTML='';
