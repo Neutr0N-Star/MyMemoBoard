@@ -19,5 +19,6 @@ contextBridge.exposeInMainWorld('desktop', {
   encryptText: (text) => ipcRenderer.invoke('encrypt-text', text),
   decryptText: (enc) => ipcRenderer.invoke('decrypt-text', enc),
   setWindowMode: (opts) => ipcRenderer.invoke('set-window-mode', opts),
-  windowAction: (action) => ipcRenderer.invoke('window-action', action)
+  windowAction: (action) => ipcRenderer.invoke('window-action', action),
+  quitApp: () => ipcRenderer.invoke('quit-app')
 });

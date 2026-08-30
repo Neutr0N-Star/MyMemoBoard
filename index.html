@@ -503,7 +503,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 <!-- 写便签浮窗 -->
 <div class="mask" id="mNew">
   <div class="modal">
-    <h3>写一张便签<button class="x" onclick="closeMask('mNew')">×</button></h3>
+    <h3><span id="mNewTitle">写一张便签</span><button class="x" onclick="closeMask('mNew')">×</button></h3>
     <div class="field"><label>写点什么</label><textarea id="nTitle" rows="2" placeholder="例：英语真题精讲一套（2019 阅读）"></textarea></div>
     <div class="row2">
       <div class="field"><label>贴到哪面墙</label><select id="nBoard"><option value="kaoyan">考研备考</option><option value="course">学期科目</option><option value="todo">待办</option><option value="life">生活事项</option></select></div>
@@ -515,7 +515,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
     </div>
     <div class="field"><label>重要程度</label><select id="nPriority"><option value="normal">普通</option><option value="important">重要 · 置顶红框</option></select></div>
     <div class="field"><label>类型</label><select id="nType"><option value="normal">普通便签 · 撕掉就完成</option><option value="daily">每日任务 · 撕掉后明天自动贴回</option></select></div>
-    <div class="foot"><button class="btn" onclick="closeMask('mNew')">取消</button><button class="btn primary" onclick="addNote()">贴上去</button></div>
+    <div class="foot"><button class="btn" onclick="closeMask('mNew')">取消</button><button class="btn primary" id="btnAddNote" onclick="addNote()">贴上去</button></div>
   </div>
 </div>
 
@@ -624,6 +624,12 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
         <span style="font-size:11px;font-weight:700;opacity:.6">桌面版支持从 GitHub Releases 自动更新</span>
       </div>
     </div>
+    <div class="field"><label>程序</label>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button class="btn danger" onclick="quitApp()">退出程序</button>
+        <span style="font-size:11px;font-weight:700;opacity:.6">关闭整个应用（仅桌面版）</span>
+      </div>
+    </div>
     <div class="field"><label>数据管理</label>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <button class="btn" onclick="exportCSV()">导出 CSV</button>
@@ -713,6 +719,7 @@ var LS='wb_xzj_wall_v1';
 var DAYS=['一','二','三','四','五','六','日'];
 var DAYKEY=['mon','tue','wed','thu','fri','sat','sun'];
 var state=null;
+var editingNoteId=null;
 
 /* ---- 全局错误上报：桌面版写 data/logs/error.log，浏览器版静默 ---- */
 window.addEventListener('error', function(e){
@@ -1327,6 +1334,7 @@ function renderWall(){
       el.className='note tone-'+(n.tone||'day')+(n.priority==='important'?' imp':'');
       el.style.setProperty('--rot',((n.id.charCodeAt(0)%5)-2)*0.6+'deg');
       el.draggable=true;el.dataset.id=n.id;
+      el.onclick=function(){openEditNote(n.id);};
       var tx=document.createElement('div');tx.className='tx';tx.textContent=n.title;
       var meta=document.createElement('div');meta.className='meta';
       var d=dueLabel(n);
@@ -1769,6 +1777,13 @@ function winAct(action){
     window.desktop.windowAction(action);
   }
 }
+function quitApp(){
+  if(window.desktop&&window.desktop.quitApp){
+    window.desktop.quitApp();
+  }else{
+    toast('退出程序只在桌面版里生效');
+  }
+}
 function applyFrameUI(){
   var fbar=document.getElementById('fbar');
   if(fbar){
@@ -1918,6 +1933,7 @@ function checkNotify(){
 
 /* ================= 行为层（改数据 → 保存 → refreshAll） ================= */
 function openNew(board,courseId){
+  editingNoteId=null;
   document.getElementById('nTitle').value='';
   document.getElementById('nBoard').value=board||'todo';
   document.getElementById('nDue').value='';
@@ -1926,6 +1942,25 @@ function openNew(board,courseId){
   var ty=document.getElementById('nType');if(ty)ty.value='normal';
   renderCourseOptions();
   if(courseId)document.getElementById('nCourse').value=courseId;
+  var nt=document.getElementById('mNewTitle');if(nt)nt.textContent='写一张便签';
+  var sb=document.getElementById('btnAddNote');if(sb)sb.textContent='贴上去';
+  openMask('mNew');
+  setTimeout(function(){document.getElementById('nTitle').focus()},80);
+}
+function openEditNote(id){
+  var n=state.notes.filter(function(x){return x.id===id})[0];
+  if(!n)return;
+  editingNoteId=id;
+  document.getElementById('nTitle').value=n.title||'';
+  document.getElementById('nBoard').value=n.board||'todo';
+  document.getElementById('nDue').value=n.due||'';
+  document.getElementById('nTime').value=n.time||'';
+  var pri=document.getElementById('nPriority');if(pri)pri.value=n.priority||'normal';
+  var ty=document.getElementById('nType');if(ty)ty.value=n.daily?'daily':'normal';
+  renderCourseOptions();
+  document.getElementById('nCourse').value=n.courseId||'';
+  var nt=document.getElementById('mNewTitle');if(nt)nt.textContent='查看 · 修改便签';
+  var sb=document.getElementById('btnAddNote');if(sb)sb.textContent='保存修改';
   openMask('mNew');
   setTimeout(function(){document.getElementById('nTitle').focus()},80);
 }
@@ -1933,6 +1968,22 @@ function addNote(){
   var t=document.getElementById('nTitle').value.trim();
   if(!t){toast('便签不能是空的');return;}
   var b=document.getElementById('nBoard').value;
+  if(editingNoteId){
+    var n=state.notes.filter(function(x){return x.id===editingNoteId})[0];
+    if(n){
+      n.title=t;n.board=b;
+      n.due=document.getElementById('nDue').value;
+      n.time=document.getElementById('nTime').value;
+      n.courseId=document.getElementById('nCourse').value;
+      n.priority=(document.getElementById('nPriority')||{}).value||'normal';
+      var d=((document.getElementById('nType')||{}).value||'normal')==='daily';
+      n.daily=d;
+      if(!d)n.lastDone=null;
+    }
+    save();closeMask('mNew');refreshAll();editingNoteId=null;
+    toast('已保存修改');
+    return;
+  }
   var tones=['morning','day','night'];
   state.notes.push({
     id:uid(),board:b,title:t,due:document.getElementById('nDue').value,

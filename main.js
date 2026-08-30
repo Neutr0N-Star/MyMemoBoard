@@ -281,6 +281,11 @@ ipcMain.handle('window-action', (_e, action) => {
   return true;
 });
 
+ipcMain.handle('quit-app', function(){
+  app.quit();
+  return true;
+});
+
 app.whenReady().then(function(){
   // 最小权限原则：拒绝所有页面权限请求（摄像头/麦克风/地理位置等），页面无需这些能力
   session.defaultSession.setPermissionRequestHandler(function(_wc, _permission, callback){ callback(false); });
