@@ -2,8 +2,13 @@
 // 职责边界：只做「窗口外壳 + 数据落盘位置 + 单实例锁」三件事。
 // 业务逻辑全在 index.html（纯前端 + localStorage），主进程不介入。
 
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain, Notification } = require('electron');
 const path = require('path');
+
+// Windows 上系统通知要能正常弹出，需先声明 AppUserModelID（与 package.json 的 build.appId 一致）
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.neutronstar.xingzhijian');
+}
 
 // ---------------------------------------------------------------------------
 // 1. 数据目录绿色化：随程序走，不污染 C 盘 AppData
@@ -59,8 +64,9 @@ function createWindow() {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
-      spellcheck: false
-      // 无 preload：星之间是纯前端应用，只用 localStorage，不需要任何 node 能力
+      spellcheck: false,
+      // preload 只桥接「置顶 / 通知」两个桌面能力，页面依旧拿不到 node
+      preload: path.join(__dirname, 'preload.js')
     }
   });
 
@@ -89,6 +95,25 @@ function createWindow() {
     win = null;
   });
 }
+
+// ---------------------------------------------------------------------------
+// 4. 桌面能力桥接：窗口置顶 / 系统通知
+//    只开这两个口子，页面依然接触不到任何 node 模块。
+// ---------------------------------------------------------------------------
+ipcMain.handle('toggle-top', () => {
+  if (!win) return false;
+  const on = !win.isAlwaysOnTop();
+  win.setAlwaysOnTop(on, 'screen-saver');
+  return on;
+});
+
+ipcMain.handle('get-top', () => (win ? win.isAlwaysOnTop() : false));
+
+ipcMain.handle('notify', (_e, { title, body }) => {
+  if (!Notification.isSupported()) return false;
+  new Notification({ title: title || '星之间', body: body || '' }).show();
+  return true;
+});
 
 app.whenReady().then(createWindow);
 
