@@ -8,5 +8,7 @@ contextBridge.exposeInMainWorld('desktop', {
   isDesktop: true,
   toggleTop: () => ipcRenderer.invoke('toggle-top'),
   getTop: () => ipcRenderer.invoke('get-top'),
-  notify: (title, body) => ipcRenderer.invoke('notify', { title, body })
+  notify: (title, body) => ipcRenderer.invoke('notify', { title, body }),
+  getAutoStart: () => ipcRenderer.invoke('get-autostart'),
+  setAutoStart: (on) => ipcRenderer.invoke('set-autostart', !!on)
 });

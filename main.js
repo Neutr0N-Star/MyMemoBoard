@@ -115,6 +115,19 @@ ipcMain.handle('notify', (_e, { title, body }) => {
   return true;
 });
 
+ipcMain.handle('get-autostart', () => {
+  try { return app.getLoginItemSettings().openAtLogin; } catch (_e) { return false; }
+});
+
+ipcMain.handle('set-autostart', (_e, on) => {
+  try {
+    app.setLoginItemSettings({ openAtLogin: !!on, openAsHidden: false });
+    return app.getLoginItemSettings().openAtLogin;
+  } catch (_e) {
+    return false;
+  }
+});
+
 app.whenReady().then(createWindow);
 
 // Windows：关窗即退出（不做 macOS 那套驻留）

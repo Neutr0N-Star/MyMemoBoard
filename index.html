@@ -198,7 +198,7 @@ header::before{content:"";position:absolute;top:-2px;left:94px;width:40px;height
 .modal .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
 /* 课表格子（机械网格 + 刻度） */
 .tt-grid{display:grid;grid-template-columns:38px repeat(7,1fr);gap:3px}
-.tt-cell{aspect-ratio:1/.86;border:1.5px solid var(--ink);border-radius:0;padding:2px;font-size:10px;color:var(--ink);line-height:1.25;overflow:hidden;cursor:pointer;background:#fff;transition:background .12s;display:flex;align-items:center;justify-content:center;text-align:center}
+.tt-cell{aspect-ratio:1/.6;border:1.5px solid var(--ink);border-radius:0;padding:2px;font-size:10px;color:var(--ink);line-height:1.25;overflow:hidden;cursor:pointer;background:#fff;transition:background .12s;display:flex;align-items:center;justify-content:center;text-align:center}
 .tt-cell:hover{background:rgba(208,52,44,.08)}
 .tt-cell.hd{border:none;background:transparent;color:var(--ink);font-size:11px;font-weight:900;font-family:var(--fd);cursor:default;aspect-ratio:auto}
 .tt-cell.hd:hover{background:transparent}
@@ -319,7 +319,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 .per-row .pn{width:34px;flex:none;font-weight:900}
 .per-row input{flex:1;min-width:0;padding:2px 5px;font-size:11px;border:1.5px solid var(--ink);border-radius:0;background:#fff;color:var(--ink);font-variant-numeric:tabular-nums}
 .tt-grid.wide{grid-template-columns:44px repeat(7,1fr);gap:4px}
-.tt-grid.wide .tt-cell{font-size:11px;aspect-ratio:1/1.05}
+.tt-grid.wide .tt-cell{font-size:11px;aspect-ratio:1/.6}
 
 /* ===== 响应式 ===== */
 @media (max-width:900px){
@@ -538,6 +538,12 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
       <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700">
         <input type="checkbox" id="setNotify" onchange="toggleNotify(this.checked)" style="width:16px;height:16px;flex:none">
         <span>上课前 5 分钟、今天到期的待办提前 30 分钟弹提醒</span>
+      </div>
+    </div>
+    <div class="field"><label>开机启动（桌面版）</label>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700">
+        <input type="checkbox" id="setAutoStart" onchange="toggleAutoStart(this.checked)" style="width:16px;height:16px;flex:none">
+        <span id="autoStartHint">登录系统时自动打开星之间</span>
       </div>
     </div>
     <div class="field"><label>数据快照（每天首次打开自动存，保留 7 天）</label>
@@ -1524,6 +1530,19 @@ function openSettings(){
   document.getElementById('aiModel').value=ai.model||'';
   document.getElementById('setNotify').checked=!!state.settings.notify;
   renderSnapshotList();
+  var asb=document.getElementById('setAutoStart'),ash=document.getElementById('autoStartHint');
+  if(asb){
+    if(window.desktop&&window.desktop.getAutoStart){
+      asb.disabled=false;
+      window.desktop.getAutoStart().then(function(on){
+        asb.checked=!!on;
+        if(ash)ash.textContent=on?'已开启：登录系统时自动打开':'登录系统时自动打开星之间';
+      }).catch(function(){asb.checked=false;});
+    }else{
+      asb.disabled=true;asb.checked=false;
+      if(ash)ash.textContent='仅桌面版（exe）支持开机启动';
+    }
+  }
   openMask('mSettings');
 }
 function saveSettings(){
@@ -1535,6 +1554,14 @@ function saveSettings(){
   save();closeMask('mSettings');toast('已保存');
 }
 function toggleNotify(v){state.settings.notify=!!v;save();}
+function toggleAutoStart(v){
+  if(!window.desktop||!window.desktop.setAutoStart){toast('开机启动只在桌面 exe 里生效');return;}
+  window.desktop.setAutoStart(!!v).then(function(on){
+    var ash=document.getElementById('autoStartHint');
+    if(ash)ash.textContent=on?'已开启：登录系统时自动打开':'登录系统时自动打开星之间';
+    toast(on?'已开启开机启动':'已关闭开机启动');
+  }).catch(function(){toast('设置失败，请检查 exe 所在目录是否可写');});
+}
 function resetAll(){
   askConfirm('重置全部数据？所有便签、作息、课程、考试、设置都会清空，回到首次打开的样子（不可恢复，建议先导出备份）。',function(){
     state=defaultState();

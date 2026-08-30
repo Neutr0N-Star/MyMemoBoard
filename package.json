@@ -29,7 +29,8 @@
       "main.js",
       "preload.js",
       "index.html",
-      "assets/icon.ico"
+      "assets/icon.ico",
+      "LICENSE"
     ],
     "win": {
       "target": ["portable"],
