@@ -120,12 +120,8 @@ if (!gotLock) {
 }
 
 function getWinModeFromState(){
-  try{
-    const raw = readStateFile();
-    if(!raw) return 'window';
-    const s = JSON.parse(raw);
-    return (s && s.settings && s.settings.winMode) || 'window';
-  }catch(_e){ return 'window'; }
+  // 知墙默认/固定为无边框窗口，使用自绘标题栏；旧的 winMode 设置不再驱赶窗口形态
+  return 'frameless';
 }
 
 // ---------------------------------------------------------------------------

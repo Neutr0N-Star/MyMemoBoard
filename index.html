@@ -308,15 +308,24 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 .stat div{display:flex;flex-direction:column;gap:1px}
 .stat .k{font-size:9.5px;font-weight:900;letter-spacing:.04em;opacity:.75}
 .stat .v{font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
-.stackbox{position:relative;border:2px solid var(--ink);background:var(--white);padding:9px 10px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-height:104px;justify-content:flex-end}
+.stackbox{position:relative;border:2px solid var(--ink);background:var(--white);padding:12px 10px 11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-height:154px;justify-content:flex-end}
 .stackbox:hover{box-shadow:inset 0 -3px 0 var(--ink)}
 .stackbox:active{transform:translate(1px,1px)}
 .stackbox .label{position:absolute;top:7px;left:9px;font-size:10.5px;font-weight:900;letter-spacing:.04em}
 .stackbox .cnt{position:absolute;top:7px;right:9px;font-size:10px;font-weight:900;background:var(--ink);color:#fff;padding:0 5px;font-variant-numeric:tabular-nums}
-.papers{position:relative;width:86px;height:62px;margin-top:20px}
-.papers i{position:absolute;left:0;right:0;height:12px;background:var(--white);border:1.5px solid var(--ink)}
-.papers i::before{content:"";position:absolute;top:0;left:0;width:9px;height:100%;background:var(--red)}
-.papers.empty{border:2px dashed var(--ink)}
+.stacknotes{position:relative;width:150px;min-height:56px;margin-top:26px}
+.stacknotes .n{position:relative;display:block;width:88%;margin:0 auto;background:var(--white);border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(23,23,26,.16);padding:6px 7px 6px 15px;font-size:11px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.stacknotes .n+.n{margin-top:-12px}
+.stacknotes .n::before{content:"";position:absolute;top:0;left:0;width:13px;height:13px;background:var(--red)}
+.stacknotes .n.b::before{background:var(--blue)}
+.stacknotes .n.k::before{background:var(--ink)}
+.stacknotes .n:first-child{transform:rotate(-2.5deg)}
+.stacknotes .n:nth-child(2){transform:rotate(1.5deg)}
+.stacknotes .n:nth-child(3){transform:rotate(-1deg);z-index:3}
+.stacknotes .n:nth-child(4){transform:rotate(2deg);z-index:4}
+.stacknotes .more{position:absolute;bottom:-5px;right:2px;font-size:9px;font-weight:900;color:var(--ink);z-index:5}
+.stacknotes.empty{width:120px;min-height:44px;margin-top:26px;border:2px dashed var(--ink);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--ink);opacity:.6;padding:6px}
+.pile-cap{font-family:var(--fm);font-size:10.5px;font-weight:700;letter-spacing:.02em;color:var(--blue);margin-top:9px}
 .drawer{margin-top:8px;border:2px solid var(--ink);background:var(--white);padding:9px 10px;cursor:pointer;display:flex;align-items:center;gap:9px}
 .drawer:hover{box-shadow:inset 0 -3px 0 var(--ink)}
 .drawer:active{transform:translate(1px,1px)}
@@ -463,14 +472,11 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 
   <div class="sidecard" id="sideCard">
     <h3>完成情况</h3>
-    <div class="stat">
-      <div><span class="k">本周撕下</span><span class="v" id="stWeek">0</span></div>
-      <div><span class="k">累计完成</span><span class="v" id="stAll">0</span></div>
-    </div>
     <div class="stackbox" onclick="openBox()" title="打开便签盒">
       <span class="label">便签盒</span>
       <span class="cnt" id="boxCnt">0</span>
-      <div class="papers" id="papers"></div>
+      <div class="stacknotes" id="papers"></div>
+      <span class="pile-cap" id="pileCap"></span>
     </div>
     <div class="drawer" onclick="openArchive()" title="打开收纳箱">
       <span class="dr"></span>
@@ -604,16 +610,6 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
         <span id="autoBackupHint">每天自动在 data/backups/ 留一份，保留 7 天</span>
       </div>
     </div>
-    <div class="field"><label>窗口模式（桌面版）</label>
-      <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700">
-        <select id="winMode" onchange="setWinMode(this.value)" style="border:1.5px solid var(--ink);border-radius:0;background:#fff;padding:6px 8px;font-weight:700">
-          <option value="window">普通窗口（窗口化）</option>
-          <option value="fullscreen">全屏</option>
-          <option value="frameless">无边框</option>
-        </select>
-        <span style="font-size:11px;font-weight:700;opacity:.65">无边框模式需重启生效</span>
-      </div>
-    </div>
     <div class="field"><label>数据快照（每天首次打开自动存，保留 7 天）</label>
       <div id="snapList" style="display:flex;flex-direction:column;gap:6px"></div>
     </div>
@@ -740,7 +736,7 @@ window.addEventListener('unhandledrejection', function(e){
 function defaultState(){
   var s={
     v:1,
-    settings:{examDate:'',exams:[],periods:defaultPeriods(),courseFilter:'',ai:{baseUrl:'',key:'',model:'gpt-4o-mini'},notify:true,autoBackup:false,winMode:'window',snapshots:[],boards:defaultBoards(),defaultBoard:'todo'},
+    settings:{examDate:'',exams:[],periods:defaultPeriods(),courseFilter:'',ai:{baseUrl:'',key:'',model:'gpt-4o-mini'},notify:true,autoBackup:false,winMode:'frameless',snapshots:[],boards:defaultBoards(),defaultBoard:'todo'},
     notes:[],
     schedule:[],
     courses:[],
@@ -809,7 +805,7 @@ function migrateSettings(){
   if(!state.settings.ai.model)state.settings.ai.model='gpt-4o-mini';
   if(state.settings.notify===undefined)state.settings.notify=true;
   if(state.settings.autoBackup===undefined)state.settings.autoBackup=false;
-  if(!state.settings.winMode)state.settings.winMode='window';
+  if(!state.settings.winMode)state.settings.winMode='frameless';
   if(!state.settings.snapshots)state.settings.snapshots=[];
   if(!state.settings.boards||!state.settings.boards.length)state.settings.boards=defaultBoards();
   state.settings.boards.forEach(function(b){if(!b.id)b.id='w'+uid().slice(0,6);if(!b.name)b.name=b.id;});
@@ -1408,25 +1404,26 @@ function renderArchive(){
 }
 function renderSideCard(){
   var boxN=boxNotes(),arcN=archivedNotes();
-  var w=document.getElementById('stWeek'),a=document.getElementById('stAll');
-  if(w)w.textContent=weekTorn();
-  if(a)a.textContent=state.notes.filter(function(n){return n.done}).length;
+  var doneCount=state.notes.filter(function(n){return n.done}).length;
+  var cap=document.getElementById('pileCap');
+  if(cap)cap.textContent='本周撕下 '+weekTorn()+' · 累计 '+doneCount;
   var as=document.getElementById('arcSub');if(as)as.textContent=arcN.length?arcN.length+' 张':'空的';
   var p=document.getElementById('papers');if(!p)return;
   p.innerHTML='';
-  if(!boxN.length){p.className='papers empty';return;}
-  p.className='papers';
-  var layers=Math.min(boxN.length,6);
-  for(var i=0;i<layers;i++){
-    var it=document.createElement('i');
-    it.style.bottom=(i*9)+'px';
-    it.style.zIndex=String(i+1);
+  if(!boxN.length){p.className='stacknotes empty';p.textContent='空的';return;}
+  p.className='stacknotes';
+  var colors=['','b','k'];
+  var max=Math.min(boxN.length,4);
+  for(var i=0;i<max;i++){
+    var it=document.createElement('span');
+    it.className='n '+colors[i%colors.length];
+    it.textContent=boxN[i].title||'便签';
     p.appendChild(it);
   }
-  if(boxN.length>6){
+  if(boxN.length>max){
     var more=document.createElement('span');
-    more.style.cssText='position:absolute;bottom:'+(layers*9+12)+'px;right:0;font-size:9px;font-weight:900;color:var(--ink)';
-    more.textContent='+'+(boxN.length-6);
+    more.className='more';
+    more.textContent='+'+(boxN.length-max);
     p.appendChild(more);
   }
 }
@@ -1716,11 +1713,6 @@ function openSettings(){
     if(window.desktop&&window.desktop.backupState){abb.disabled=false;}else{abb.disabled=true;onB=false;abb.checked=false;}
     if(abh)abh.textContent=onB?'每天自动备份：data/backups/ 保留 7 天':'开启后每天自动在 data/backups/ 留一份，保留 7 天';
   }
-  var wm=document.getElementById('winMode');
-  if(wm){
-    wm.value=state.settings.winMode||'window';
-    if(!(window.desktop&&window.desktop.setWindowMode))wm.disabled=true;
-  }
   openMask('mSettings');
 }
 function saveSettings(){
@@ -1760,17 +1752,6 @@ function checkUpdate(){
     else{toast('当前已是最新版本');}
   }).catch(function(){toast('检查更新失败');});
 }
-function setWinMode(v){
-  if(!window.desktop||!window.desktop.setWindowMode){toast('窗口模式只在桌面版里生效');return;}
-  state.settings.winMode=v;save();
-  if(v==='fullscreen'){
-    window.desktop.setWindowMode({fullscreen:true,frameless:false}).then(function(){toast('已切换到全屏模式');}).catch(function(){toast('设置失败');});
-  }else if(v==='frameless'){
-    window.desktop.setWindowMode({fullscreen:false,frameless:true}).then(function(){toast('无边框模式将在下次启动时生效');}).catch(function(){toast('设置失败');});
-  }else{
-    window.desktop.setWindowMode({fullscreen:false,frameless:false}).then(function(){toast('已切换到普通窗口');}).catch(function(){toast('设置失败');});
-  }
-}
 function winAct(action){
   if(window.desktop&&window.desktop.windowAction){
     window.desktop.windowAction(action);
@@ -1786,7 +1767,8 @@ function quitApp(){
 function applyFrameUI(){
   var fbar=document.getElementById('fbar');
   if(fbar){
-    if(state.settings.winMode==='frameless'&&window.desktop&&window.desktop.windowAction){
+    if(window.desktop&&window.desktop.windowAction){
+      // 桌面版默认无边框，使用自绘标题栏
       fbar.classList.add('on');
       document.body.classList.add('frameless');
     }else{
