@@ -15,7 +15,9 @@
     "appId": "com.neutronstar.xingzhijian",
     "productName": "XingZhiJian",
     "asar": true,
+    "npmRebuild": false,
     "icon": "assets/icon.ico",
+    "copyright": "Copyright © 2026 Neutr0N_Star",
     "electronDownload": {
       "cache": ".builder-electron-cache",
       "mirror": "https://npmmirror.com/mirrors/electron/"
@@ -27,7 +29,7 @@
       "main.js",
       "preload.js",
       "index.html",
-      "assets/**/*"
+      "assets/icon.ico"
     ],
     "win": {
       "target": ["portable"],

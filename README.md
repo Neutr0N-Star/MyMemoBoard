@@ -4,9 +4,9 @@
 
 ## 快速开始
 
-**推荐 · 桌面应用**：双击桌面上的「星之间.exe」→ 独立窗口，无浏览器地址栏/标签页，视觉完整，自带构成主义图标。
+**推荐 · 桌面应用**：双击 `release\XingZhiJian-1.0.0-portable.exe`（可重命名为「星之间.exe」）→ 独立窗口，无浏览器地址栏/标签页，视觉完整，自带构成主义图标。
 
-**临时 · 浏览器**：双击 `index.html` 即可。无需安装、无需服务器、无网络依赖。
+**临时 · 浏览器**：双击 `index.html` 即可。核心功能离线运行，无需安装、无需服务器；仅可选的 AI 周报在你配置远端接口时才会产生网络请求。
 
 > ⚠️ 浏览器版与桌面 exe 的便签数据**分开存储**（浏览器在浏览器 profile，桌面 exe 在 exe 同目录 `data/`）。
 > 从浏览器迁移到桌面版：浏览器里「导出 JSON」→ 桌面版「导入 JSON」。
@@ -54,7 +54,20 @@
 
 **桌面 exe 专属**：顶栏「置顶」按钮 + 系统通知（上课前 5 分钟、今日待办提前 30 分钟，设置里可关）。这两项经 `preload.js` 用 `contextBridge` 桥接，页面仍拿不到任何 node 能力；浏览器版会自动隐藏置顶按钮。**改动后需重新打包才生效。**
 
+**未签名提示**：当前 exe 未做代码签名，Windows SmartScreen 可能提示「未知发布者」。这是本地自用的正常现象；如需正式对外分发，建议后续配置代码签名证书。
+
 **时间轴的撞车判定**：中线按 5 分钟切片，逐片判断该时刻是否同时落在「某节课」与「某段作息」内——两者都在 = 撞车（红），只有一个 = 不撞车（绿），都没有 = 空档（灰）。切片结果合并成 CSS `linear-gradient` 色标，一个 div 画出整条分段轴。这解决的真实问题是「这节课去不去」：左边有课、右边空着 → 可以去；左右都有 → 当场抉择。
+
+## 数据与隐私
+
+- **默认全离线**：一切便签、作息、课程、设置都只存在本机——浏览器版在浏览器 profile，桌面版在 exe 同目录 `data/`（不写 C 盘 AppData），不上传任何服务器。
+- **AI 周报**：只有你主动点「生成」时，才会把本周便签/完成/逾期/考试等摘要发往你**自己填的** OpenAI 兼容 Base URL（如本地 Ollama）。默认 Base URL 为空，不会请求网络。
+- **API Key**：你填的 Key 以明文保存在本地数据中，不会发给作者或任何第三方；**导出 JSON 时 Key 会被替换为 `***`**，导入脱敏文件不会覆盖你当前已保存的 Key。
+- **分享 JSON 请注意**：导出文件虽已脱敏 Key，但仍含你的学习/待办数据，请勿上传到公开网盘或发给陌生人。
+
+## 许可证
+
+本项目为 MIT License（见根目录 `LICENSE`）。Electron 运行时与打包工具按各自开源许可随发布包附带了对应许可文件（`LICENSE.electron.txt` / `LICENSES.chromium.html`）。
 
 ## 视觉体系
 
@@ -88,7 +101,7 @@
 
 **启动方式**
 
-- 桌面 exe：`C:\Users\19747\Desktop\星之间.exe`（单文件 portable，双击即开，数据落在 `Desktop\data\`）
+- 桌面 exe：`release\XingZhiJian-1.0.0-portable.exe`（单文件 portable，可重命名为任意文件名；双击即开，数据落在 exe 同目录 `data\`）
 - 命令行开发：`npm start`
 
 **打包为单文件 exe**
@@ -112,4 +125,4 @@ npm run dist           # 产出 release/XingZhiJian-1.0.0-portable.exe（约 86M
 ## 入口
 
 - 门牌：`.overview.md`；蓝图：`notes.md`；产物：`index.html` + `assets/archive/`。
-- 桌面外壳：`main.js` + `package.json` + `assets/icon.ico`；打包产物 `release/XingZhiJian-1.0.0-portable.exe`，桌面入口 `C:\Users\19747\Desktop\星之间.exe`。
+- 桌面外壳：`main.js` + `preload.js` + `package.json` + `assets/icon.ico`；打包产物 `release/XingZhiJian-1.0.0-portable.exe`。

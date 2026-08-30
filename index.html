@@ -178,7 +178,7 @@ header::before{content:"";position:absolute;top:-2px;left:94px;width:40px;height
 .note.anim-tear{animation:tearOff .5s cubic-bezier(.5,0,.75,.4) forwards;pointer-events:none}
 .note.anim-back{animation:stickBack .55s cubic-bezier(.2,.9,.25,1.05) both}
 /* ===== 浮窗 = 功能面板（白底黑框直角） ===== */
-.mask{position:fixed;inset:0;background:rgba(23,23,26,.72);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.mask{position:fixed;inset:0;background:rgba(23,23,26,.72);z-index:150;display:none;align-items:center;justify-content:center;padding:20px}
 .mask.on{display:flex;animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .modal{width:100%;max-width:520px;max-height:86vh;overflow:auto;padding:22px;border-radius:0;
@@ -1774,7 +1774,9 @@ function toast(msg){
 function openTT(){openMask('mTT')}
 function openBox(){openMask('mBox')}
 function exportJSON(){
-  var blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  var out=JSON.parse(JSON.stringify(state));
+  if(out.settings&&out.settings.ai&&out.settings.ai.key)out.settings.ai.key='***';
+  var blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='便签墙-'+todayISO()+'.json';a.click();
 }
@@ -1786,7 +1788,12 @@ function importJSON(inp){
       var d=JSON.parse(r.result);
       if(!d||!d.notes)throw 0;
       askConfirm('导入会覆盖当前全部数据，确定？',function(){
+        var oldKey=(state.settings&&state.settings.ai&&state.settings.ai.key)||'';
         state=d;
+        // 导入文件里的 API Key 已被导出脚本脱敏，避免空串/占位符覆盖当前 Key
+        if(state.settings&&state.settings.ai&&(!state.settings.ai.key||state.settings.ai.key==='***')){
+          state.settings.ai.key=oldKey;
+        }
         if(!state.notes)state.notes=[];
         if(!state.schedule)state.schedule=[];
         if(!state.courses)state.courses=[];
