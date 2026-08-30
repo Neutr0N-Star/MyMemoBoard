@@ -6,13 +6,13 @@
   "author": "Neutr0N_Star",
   "license": "MIT",
   "private": true,
-  "homepage": "https://github.com/Neutr0N_Star/zhiqiang",
+  "homepage": "https://github.com/Neutr0N_Star/MyMemoBoards",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Neutr0N_Star/zhiqiang.git"
+    "url": "git+https://github.com/Neutr0N_Star/MyMemoBoards.git"
   },
   "bugs": {
-    "url": "https://github.com/Neutr0N_Star/zhiqiang/issues"
+    "url": "https://github.com/Neutr0N_Star/MyMemoBoards/issues"
   },
   "keywords": [
     "学习",
@@ -56,7 +56,7 @@
       {
         "provider": "github",
         "owner": "Neutr0N_Star",
-        "repo": "zhiqiang"
+        "repo": "MyMemoBoards"
       }
     ],
     "win": {

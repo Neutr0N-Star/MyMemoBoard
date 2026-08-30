@@ -58,7 +58,7 @@
 
 **未签名提示**：当前 exe 未做代码签名，Windows SmartScreen 可能提示「未知发布者」。这是本地自用的正常现象；如需正式对外分发，建议后续配置代码签名证书。
 
-**下载与校验**：发布时建议同时提供 `SHA256SUMS.txt`。用户可运行 `Get-FileHash -Algorithm SHA256 .\MyMemoBoards-1.0.0-portable.exe` 与发布页校验值对比，防止文件被篡改。完整发布说明模板见 `docs/RELEASE.md`，GitHub Pages 下载页骨架见 `docs/index.html`。
+**下载与校验**：发布时建议同时提供 `SHA256SUMS.txt`。用户可运行 `Get-FileHash -Algorithm SHA256 .\MyMemoBoards-1.0.0-portable.exe` 与发布页校验值对比，防止文件被篡改。完整发布说明模板见 `docs/RELEASE.md`，GitHub Pages 下载页见 `docs/index.html`。
 
 **时间轴的撞车判定**：中线按 5 分钟切片，逐片判断该时刻是否同时落在「某节课」与「某段作息」内——两者都在 = 撞车（红），只有一个 = 不撞车（绿），都没有 = 空档（灰）。切片结果合并成 CSS `linear-gradient` 色标，一个 div 画出整条分段轴。这解决的真实问题是「这节课去不去」：左边有课、右边空着 → 可以去；左右都有 → 当场抉择。
 

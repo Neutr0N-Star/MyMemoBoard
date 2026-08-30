@@ -1,4 +1,4 @@
-# 星之间 · 应用图标生成脚本（构成主义构图）
+# 知墙 · 应用图标生成脚本（构成主义构图）
 # 运行：python assets\make-icon.py   →  产出 assets/icon.ico + icon.png
 # 配色与 index.html 的 CSS 变量保持一致，改这里即全局同步。
 
@@ -45,7 +45,7 @@ def build(size):
     # 4. 红色矩形（右上，压在黑带之上形成交叠层次）
     d.rectangle(m((140, 40), (236, 116)), fill=RED + (255,))
 
-    # 5. 白色四角星（红块中心，呼应「星之间」）
+    # 5. 白色四角星（红块中心，构成主义星形）
     d.polygon(m(*star(188, 78, 34, 11)), fill=WHITE + (255,))
 
     return img
