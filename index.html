@@ -271,6 +271,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 .ttpage .pane{background:var(--white);border:2px solid var(--ink);padding:13px 15px;position:relative}
 .ttpage .pane::before{content:"";position:absolute;top:-2px;left:-2px;width:48px;height:8px;background:var(--red)}
 .ttpage .pane h4{font-size:12px;font-weight:900;font-family:var(--fd);letter-spacing:.06em;margin-bottom:9px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+.per-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:3px 12px}
 .per-row{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px;font-weight:700}
 .per-row .pn{width:34px;flex:none;font-weight:900}
 .per-row input{flex:1;min-width:0;padding:2px 5px;font-size:11px;border:1.5px solid var(--ink);border-radius:0;background:#fff;color:var(--ink);font-variant-numeric:tabular-nums}
@@ -505,8 +506,12 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
         <div class="clist" id="courseMgr"></div>
       </div>
       <div class="pane">
-        <h4>节次时间（点开可改）</h4>
+        <h4>节次时间（每行起止都能改 · 行数可增减）</h4>
         <div id="periodList"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn" onclick="addPeriod()">+ 加一节</button>
+          <button class="btn danger" onclick="removePeriod()">− 删最后一节</button>
+        </div>
         <h4 style="margin-top:15px">周课表 · 点格子选课程</h4>
         <div class="tt-grid wide" id="ttGrid2"></div>
       </div>
@@ -910,34 +915,37 @@ function renderTT(){
   g.innerHTML='';
   var c0=document.createElement('div');c0.className='tt-cell hd';c0.textContent='';g.appendChild(c0);
   DAYS.forEach(function(d){var c=document.createElement('div');c.className='tt-cell hd';c.textContent=d;g.appendChild(c)});
-  for(var s=1;s<=10;s++){
-    var h=document.createElement('div');h.className='tt-cell hd';h.textContent=s;g.appendChild(h);
-    DAYKEY.forEach(function(dk){
-      var key=dk+'-'+s;
-      var c=document.createElement('div');c.className='tt-cell';
-      var v=state.timetable[key],p=periodOf(s);
-      c.innerHTML=v?'<span class="cn">'+esc(v)+'</span>':'';
-      c.title='第'+s+'节'+(p?(' '+p.start+'-'+p.end):'')+(v?(' · '+v):'');
-      g.appendChild(c);
-    });
-  }
-}
-function renderTT2(){
-  var g=document.getElementById('ttGrid2');if(!g)return;
-  g.innerHTML='';
-  var c0=document.createElement('div');c0.className='tt-cell hd';c0.textContent='';g.appendChild(c0);
-  DAYS.forEach(function(d){var c=document.createElement('div');c.className='tt-cell hd';c.textContent=d;g.appendChild(c)});
-  for(var s=1;s<=10;s++){
+  state.settings.periods.forEach(function(pp){
+    var s=pp.n;
     var h=document.createElement('div');h.className='tt-cell hd';h.textContent=s;g.appendChild(h);
     DAYKEY.forEach(function(dk){
       var key=dk+'-'+s;
       var c=document.createElement('div');c.className='tt-cell';
       var v=state.timetable[key];
       c.innerHTML=v?'<span class="cn">'+esc(v)+'</span>':'';
+      c.title='第'+s+'节 '+pp.start+'-'+pp.end+(v?(' · '+v):'');
+      g.appendChild(c);
+    });
+  });
+}
+function renderTT2(){
+  var g=document.getElementById('ttGrid2');if(!g)return;
+  g.innerHTML='';
+  var c0=document.createElement('div');c0.className='tt-cell hd';c0.textContent='';g.appendChild(c0);
+  DAYS.forEach(function(d){var c=document.createElement('div');c.className='tt-cell hd';c.textContent=d;g.appendChild(c)});
+  state.settings.periods.forEach(function(pp){
+    var s=pp.n;
+    var h=document.createElement('div');h.className='tt-cell hd';h.textContent=s;g.appendChild(h);
+    DAYKEY.forEach(function(dk){
+      var key=dk+'-'+s;
+      var c=document.createElement('div');c.className='tt-cell';
+      var v=state.timetable[key];
+      c.innerHTML=v?'<span class="cn">'+esc(v)+'</span>':'';
+      c.title='第'+s+'节 '+pp.start+'-'+pp.end;
       c.onclick=function(){editCell(c,key,v)};
       g.appendChild(c);
     });
-  }
+  });
 }
 function editCell(cell,key,cur){
   if(cell.querySelector('select'))return;
@@ -958,7 +966,7 @@ function editCell(cell,key,cur){
 }
 function renderPeriods(){
   var box=document.getElementById('periodList');if(!box)return;
-  box.innerHTML='';
+  box.innerHTML='';box.className='per-list';
   state.settings.periods.forEach(function(p){
     var row=document.createElement('div');row.className='per-row';
     var nm=document.createElement('span');nm.className='pn';nm.textContent='第'+p.n+'节';
@@ -971,8 +979,40 @@ function renderPeriods(){
   });
 }
 function resetPeriods(){
-  if(!confirm('恢复默认节次时间？会覆盖你现在设的每节课起止时间。'))return;
-  state.settings.periods=defaultPeriods();save();refreshAll();
+  if(!confirm('恢复默认节次？会回到 10 节，覆盖你现在设的每节课起止时间，第 11 节及之后排的课也会一起清掉。'))return;
+  var old=state.settings.periods.length;
+  state.settings.periods=defaultPeriods();
+  if(old>10){
+    Object.keys(state.timetable).forEach(function(k){
+      if((+k.split('-')[1])>10)delete state.timetable[k];
+    });
+  }
+  save();refreshAll();
+}
+function addPeriod(){
+  var ps=state.settings.periods;
+  if(ps.length>=16){alert('最多 16 节。再往后的安排建议直接写进右侧作息里。');return;}
+  var last=ps[ps.length-1];
+  var endMin=last?hhmmToMin(last.end):null;
+  var st=(endMin!=null)?endMin+10:8*60;
+  if(st>=22*60){alert('新的一节会排到 22:00 之后，先把前一节的结束时间往前调一调。');return;}
+  ps.push({n:ps.length+1,start:minToHHMM(st),end:minToHHMM(st+45)});
+  save();refreshAll();
+}
+function removePeriod(){
+  var ps=state.settings.periods;
+  if(ps.length<=1){alert('至少留一节。');return;}
+  var n=ps[ps.length-1].n;
+  var has=false;
+  Object.keys(state.timetable).forEach(function(k){
+    if(k.split('-')[1]===String(n)&&state.timetable[k])has=true;
+  });
+  if(!confirm('删掉第 '+n+' 节？'+(has?'这一节上还排着课，会一起清掉。':'')))return;
+  ps.pop();
+  Object.keys(state.timetable).forEach(function(k){
+    if(k.split('-')[1]===String(n))delete state.timetable[k];
+  });
+  save();refreshAll();
 }
 function renderCourseMgr(){
   var box=document.getElementById('courseMgr');box.innerHTML='';
