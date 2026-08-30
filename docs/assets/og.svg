@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#F2EFE6"/>
+  <defs>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M30 0H0V30" fill="none" stroke="rgba(23,23,26,.07)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect x="0" y="0" width="78" height="14" fill="#D0342C"/>
+  <text x="120" y="124" font-family="Arial Black, Impact, sans-serif" font-size="96" font-weight="900" fill="#17171A">知墙</text>
+  <text x="124" y="176" font-family="-apple-system, sans-serif" font-size="30" font-weight="700" letter-spacing="2" fill="#3E5C76">MyMemoBoards · 学生向学习工作台</text>
+  <rect x="120" y="232" width="960" height="300" fill="#FFFFFF" stroke="#17171A" stroke-width="4"/>
+  <rect x="120" y="232" width="960" height="14" fill="#D0342C"/>
+  <text x="600" y="378" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="34" font-weight="900" fill="#17171A">应用主界面截图 1440×900 待补充</text>
+  <text x="600" y="428" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="20" font-weight="600" fill="#5F5E5A">四面便签墙 + 作息侧栏 + 课程表，发布前替换为真实截图</text>
+  <text x="120" y="600" font-family="-apple-system, sans-serif" font-size="22" font-weight="700" fill="#17171A">考研 / 学期 / 待办 / 生活 · 数据全本地 · 双击即用</text>
+</svg>

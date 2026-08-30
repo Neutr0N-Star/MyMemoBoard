@@ -2,172 +2,409 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>知墙 · 下载页</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>知墙 · MyMemoBoards — 一个便签墙可自由增删的工作台</title>
+<meta name="description" content="知墙 MyMemoBoards：Windows 桌面便签墙工作台，复习/待办/生活分开贴，做完撕下归档。数据全在本机，MIT 开源。">
+<meta name="theme-color" content="#F2EFE6">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2317171A'/%3E%3Crect width='64' height='14' fill='%23D0342C'/%3E%3Ctext x='32' y='50' font-size='44' font-family='Arial Black' font-weight='900' text-anchor='middle' fill='%23F2EFE6'%3E知%3C/text%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="知墙 · MyMemoBoards">
+<meta property="og:description" content="一个便签墙可自由增删的工作台。Windows 桌面应用，数据全在本机，MIT 开源。">
+<meta property="og:image" content="./assets/og.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="知墙 · MyMemoBoards">
+<meta name="twitter:description" content="一个便签墙可自由增删的工作台。Windows 桌面应用，数据全在本机，MIT 开源。">
+<meta name="twitter:image" content="./assets/og.svg">
+
 <style>
   :root{
     --paper:#F2EFE6;
+    --grid:rgba(23,23,26,.09);
     --ink:#17171A;
     --red:#D0342C;
-    --white:#FFFFFF;
     --blue:#3E5C76;
-    --grid:rgba(30,30,30,.08);
-    --fd:"Arial Black","Arial Bold","Impact","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    --white:#FFFFFF;
+    --line:rgba(23,23,26,.20);
+    --muted:#4a4a4f;
+    --fd:"Arial Black","PingFang SC","Microsoft YaHei",sans-serif;
+    --fb:"PingFang SC","Microsoft YaHei","Source Han Sans SC",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --fm:ui-monospace,SFMono-Regular,Menlo,Consolas,"Courier New",monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
   body{
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Roboto,sans-serif;
-    background:var(--paper);color:var(--ink);line-height:1.6;font-size:15px;
-    padding:46px 20px calc(40px + env(safe-area-inset-bottom));min-height:100vh;
+    font-family:var(--fb);background:var(--paper);color:var(--ink);
+    line-height:1.62;font-size:16px;font-weight:600;overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
   }
+
+  /* 蓝图纸底：米白纸 + 毫米网格（产品本身零渐变，这里也不用） */
   body::before{
-    content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;
+    content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;background-color:var(--paper);
     background-image:
-      repeating-linear-gradient(0deg,var(--grid) 0 1px,transparent 1px 22px),
-      repeating-linear-gradient(90deg,var(--grid) 0 1px,transparent 1px 22px);
-    background-size:22px 22px,22px 22px;
+      repeating-linear-gradient(0deg,var(--grid) 0 1px,transparent 1px 24px),
+      repeating-linear-gradient(90deg,var(--grid) 0 1px,transparent 1px 24px);
+    background-size:24px 24px,24px 24px;
   }
-  body::after{
-    content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
-    background:
-      radial-gradient(58vw 46vh at 78% -4%, rgba(62,92,118,.07), transparent 62%),
-      radial-gradient(42vw 40vh at 4% 96%, rgba(23,23,26,.05), transparent 60%);
+  /* 四角十字准星（App 真实外壳元素） */
+  .regmarks{position:fixed;inset:0;z-index:-1;pointer-events:none;color:var(--ink)}
+  .regmarks i{position:absolute;width:20px;height:20px;opacity:.5}
+  .regmarks .c-tl{top:16px;left:16px;border-top:2px solid var(--ink);border-left:2px solid var(--ink)}
+  .regmarks .c-tr{top:16px;right:16px;border-top:2px solid var(--ink);border-right:2px solid var(--ink)}
+  .regmarks .c-bl{bottom:16px;left:16px;border-bottom:2px solid var(--ink);border-left:2px solid var(--ink)}
+  .regmarks .c-br{bottom:16px;right:16px;border-bottom:2px solid var(--ink);border-right:2px solid var(--ink)}
+
+  /* 右下角图纸标题栏（App 真实外壳） */
+  .titleblock{
+    position:fixed;right:18px;bottom:12px;width:184px;border:2px solid var(--ink);
+    background:var(--paper);padding:7px 9px;display:flex;flex-direction:column;gap:2px;
+    font-family:var(--fm);font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    opacity:.94;z-index:40;
   }
-  .page{max-width:860px;margin:0 auto;position:relative}
-  .sheet{
-    background:var(--white);border:3px solid var(--ink);box-shadow:12px 12px 0 rgba(23,23,26,.22);
-    position:relative;padding:34px 38px 30px;
+  .titleblock b{display:block;font-family:var(--fd);font-size:12px;color:var(--ink);letter-spacing:.04em;border-bottom:2px solid var(--ink);padding-bottom:4px;margin-bottom:4px}
+  .titleblock b em{color:var(--red);font-style:normal}
+  .titleblock span{display:flex;justify-content:space-between;align-items:center}
+  .titleblock em{font-style:normal;color:var(--blue);letter-spacing:.08em}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px calc(56px + env(safe-area-inset-bottom))}
+
+  /* 顶栏 图签栏 */
+  .topbar{
+    position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;
+    padding:11px 24px;margin-bottom:50px;background:var(--paper);
+    border-bottom:3px solid var(--ink);
   }
-  .sheet::before{
-    content:"";position:absolute;top:-3px;left:-3px;width:64px;height:11px;background:var(--red);z-index:2;
-  }
-  .corners{position:absolute;inset:10px;pointer-events:none;z-index:1;color:var(--ink)}
-  .corners i{position:absolute;width:16px;height:16px;opacity:.6}
-  .corners i:nth-child(1){top:0;left:0;border-top:2px solid var(--ink);border-left:2px solid var(--ink)}
-  .corners i:nth-child(2){top:0;right:0;border-top:2px solid var(--ink);border-right:2px solid var(--ink)}
-  .corners i:nth-child(3){bottom:0;left:0;border-bottom:2px solid var(--ink);border-left:2px solid var(--ink)}
-  .corners i:nth-child(4){bottom:0;right:0;border-bottom:2px solid var(--ink);border-right:2px solid var(--ink)}
-  .masthead{display:flex;align-items:center;gap:16px;border-bottom:3px solid var(--ink);padding-bottom:18px;margin-bottom:8px}
-  .masthead img{width:86px;height:86px;object-fit:contain;flex:none;border:2px solid var(--ink);background:var(--paper)}
-  .masthead .tt{min-width:0}
-  .masthead h1{font-size:26px;font-weight:900;font-family:var(--fd);letter-spacing:.02em;line-height:1.2}
-  .masthead .sub{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
-  .masthead .sub em{font-style:normal;color:var(--red)}
-  .lead{margin:18px 0 6px;font-size:15.5px;font-weight:500}
-  h2{
-    font-size:15px;font-weight:900;font-family:var(--fd);letter-spacing:.08em;text-transform:uppercase;
-    margin:30px 0 14px;display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:2px solid var(--ink);
-  }
-  h2::before{content:"";width:11px;height:11px;background:var(--red);flex:none}
-  h3{font-size:13px;font-weight:900;margin:14px 0 6px;letter-spacing:.03em}
-  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:6px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-weight:900;font-size:19px;letter-spacing:.01em}
+  .brand .mark{width:36px;height:36px;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+  .brand .en{font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:.22em;color:var(--blue);text-transform:uppercase}
+  .brand .stack{display:flex;flex-direction:column;line-height:1.05}
+  .top-acts{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+
+  /* 按钮（零圆角 / 硬阴影 / 红黑功能色） */
   .btn{
-    display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 18px;
-    border:2px solid var(--ink);background:var(--ink);color:#fff;text-decoration:none;
-    font-weight:900;font-size:14px;letter-spacing:.02em;transition:box-shadow .1s,transform .1s,background .1s;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 22px;
+    border:2px solid var(--ink);border-radius:0;background:var(--ink);color:var(--paper);text-decoration:none;
+    font-family:var(--fb);font-weight:800;font-size:14px;letter-spacing:.01em;
+    transition:box-shadow .1s,transform .1s,background .1s,color .1s;cursor:pointer;
   }
-  .btn:hover{box-shadow:inset 0 -4px 0 var(--red);background:var(--ink)}
+  .btn:hover{box-shadow:inset 0 -5px 0 var(--red)}
   .btn:active{transform:translate(1px,1px)}
-  .btn.alt{background:var(--white);color:var(--ink)}
-  .btn.alt:hover{box-shadow:inset 0 -4px 0 var(--ink)}
-  .btn .arrow{font-size:18px;line-height:1}
-  .meta-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
-  .meta-box{border:2px solid var(--ink);background:var(--paper);padding:14px 16px;position:relative}
-  .meta-box::before{content:"";position:absolute;top:-2px;left:-2px;width:38px;height:7px;background:var(--red)}
-  .meta-box h3{border-bottom:2px solid var(--ink);padding-bottom:6px;margin-top:0;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-  .meta-box h3::before{content:"";width:9px;height:9px;background:var(--ink);flex:none}
-  .meta-box p{font-size:13px}
-  .meta-box code{background:#fff;border:1px solid var(--ink);padding:1px 5px;font-size:12px}
-  .features{display:grid;grid-template-columns:1fr 1fr;gap:10px;list-style:none}
-  .features li{
-    border:1.5px solid var(--ink);background:#fff;padding:10px 12px;font-size:13px;font-weight:700;
-    display:flex;gap:8px;align-items:flex-start;box-shadow:3px 3px 0 rgba(23,23,26,.12);
+  .btn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(208,52,44,.55)}
+  .btn .arrow{font-size:17px;line-height:1}
+  .btn.ghost{background:var(--white);color:var(--ink)}
+  .btn.ghost:hover{box-shadow:inset 0 -5px 0 var(--ink)}
+  .btn.big{min-height:54px;font-size:16px;padding:0 28px}
+  .btn.red{background:var(--red);border-color:var(--red);color:var(--paper)}
+  .btn.red:hover{box-shadow:inset 0 -5px 0 var(--ink)}
+
+  /* 分区标题（红方块 = App 便签角标，不是装饰系统） */
+  h2{
+    font-family:var(--fd);font-size:27px;font-weight:900;letter-spacing:.01em;
+    margin:0 0 18px;padding-bottom:10px;border-bottom:3px solid var(--ink);
+    display:flex;align-items:center;gap:11px;
   }
-  .features li::before{content:"▸";color:var(--red);font-weight:900;flex:none}
-  pre{
-    background:var(--paper);border:1.5px solid var(--ink);padding:12px 14px;overflow:auto;
-    font-size:12.5px;line-height:1.5;position:relative;
+  h2::before{content:"";width:13px;height:13px;background:var(--red);flex:none}
+
+  /* HERO */
+  .hero{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;margin-bottom:20px}
+  .hero h1{font-family:var(--fd);font-size:clamp(48px,8vw,74px);line-height:.96;letter-spacing:.005em;font-weight:900;margin-bottom:8px}
+  .hero h1 .en{display:block;font-family:var(--fm);font-size:15px;font-weight:700;letter-spacing:.34em;color:var(--red);text-transform:uppercase;margin-top:12px}
+  .hero .lead{font-size:17px;font-weight:600;max-width:480px;margin:22px 0 26px;color:var(--ink)}
+  .hero .lead b{color:var(--red)}
+  .hero-cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .hero-note{font-family:var(--fm);font-size:11px;font-weight:700;letter-spacing:.02em;color:var(--blue);margin-top:16px;line-height:1.5}
+
+  /* Hero 剖视：精确还原 App 真实布局 */
+  .app{
+    background:var(--white);border:3px solid var(--ink);
+    box-shadow:12px 12px 0 rgba(23,23,26,.22);position:relative;overflow:hidden;
   }
-  pre::before{content:"";position:absolute;top:0;left:0;width:34px;height:5px;background:var(--red)}
-  .warn{border:1.5px solid var(--red);background:rgba(208,52,44,.06);padding:10px 12px;font-size:12.5px;font-weight:700;margin-top:10px}
-  .warn b{color:var(--red)}
-  footer{margin-top:26px;padding-top:14px;border-top:2px solid var(--ink);text-align:center;font-size:12px;font-weight:700;letter-spacing:.06em}
+  .app::before{content:"";position:absolute;top:-3px;left:-3px;width:70px;height:13px;background:var(--red);z-index:3}
+  .app-bar{display:flex;align-items:center;gap:8px;padding:9px 11px;background:var(--white);border-bottom:2px solid var(--ink);min-height:42px}
+  .app-bar .logo{width:28px;height:28px;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:900;font-size:15px;flex:none}
+  .app-bar .nm{font-family:var(--fd);font-weight:900;font-size:14px}
+  .app-bar .pills{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap}
+  .app-bar .pills i{font-style:normal;font-family:var(--fm);font-size:9px;font-weight:700;color:#fff;background:var(--blue);padding:2px 6px;display:inline-flex;align-items:center;gap:3px;letter-spacing:.02em}
+  .app-bar .pills i b{font-variant-numeric:tabular-nums}
+  .app-bar .pills i.hot{background:var(--red)}
+  .app-body{display:grid;grid-template-columns:104px 1fr;gap:0}
+  .app-side{border-right:2px solid var(--ink);padding:9px 8px;position:relative}
+  .app-side::before{content:"";position:absolute;top:-2px;left:-2px;width:42px;height:8px;background:var(--red)}
+  .app-side h4{font-size:9px;font-weight:900;font-family:var(--fd);letter-spacing:.1em;text-transform:uppercase;border-bottom:2px solid var(--ink);padding-bottom:4px;margin-bottom:7px}
+  .tl-row{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:700;padding:4px 0;border-bottom:1px solid var(--line);position:relative}
+  .tl-row .t{width:24px;flex:none;color:var(--ink);border-left:3px solid var(--blue);padding-left:3px;font-family:var(--fm);font-variant-numeric:tabular-nums}
+  .tl-now{position:absolute;left:-2px;right:-2px;height:0;border-top:2px solid var(--red);margin-top:18px}
+  .tl-now span{position:absolute;left:0;top:-9px;font-family:var(--fm);font-size:8px;font-weight:700;color:#fff;background:var(--red);padding:1px 4px}
+  .app-main{padding:11px}
+  .zone{border:1.5px dashed var(--ink);padding:7px 8px 9px;margin-bottom:9px;position:relative}
+  .zone .zh{font-size:10px;font-weight:900;font-family:var(--fd);letter-spacing:.04em;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+  .zone .zh::before{content:"";width:9px;height:9px;background:var(--red);flex:none}
+  .notes{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+  .note{
+    aspect-ratio:2/2.4;background:var(--white);border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(23,23,26,.18);
+    position:relative;padding:15px 6px 6px;display:flex;align-items:center;justify-content:center;text-align:center;
+    font-size:8.5px;font-weight:700;line-height:1.3;transform:rotate(var(--r,0deg));
+  }
+  .note::before{content:"";position:absolute;top:0;left:0;width:16px;height:16px;background:var(--red)}
+  .note.b::before{background:var(--blue)}
+  .note.k::before{background:var(--ink)}
+  .note.add{border:1.5px dashed var(--ink);box-shadow:none;font-size:15px;font-weight:900;color:var(--ink);opacity:.55}
+  .app-foot{display:flex;gap:7px;border-top:2px solid var(--ink);padding:8px 11px;background:var(--paper);flex-wrap:wrap;align-items:center}
+  .app-foot span{font-size:9px;font-weight:900;font-family:var(--fm);letter-spacing:.04em;border:1.5px solid var(--ink);padding:2px 7px;background:var(--white)}
+  .stack-vis{margin-left:auto;display:flex;align-items:flex-end;gap:2px;height:18px}
+  .stack-vis i{width:5px;background:var(--ink);display:block}
+
+  /* 功能：朴素块，红角标 = App 便签角，不编号不水印 */
+  .features{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:48px 0}
+  .card{background:var(--white);border:2px solid var(--ink);box-shadow:5px 5px 0 rgba(23,23,26,.16);padding:16px 18px;position:relative}
+  .card::before{content:"";position:absolute;top:-2px;left:-2px;width:42px;height:8px;background:var(--red)}
+  .card h3{font-family:var(--fd);font-size:16px;font-weight:900;letter-spacing:.01em;margin-bottom:7px;line-height:1.2}
+  .card p{font-size:14px;font-weight:600;color:var(--muted);line-height:1.55}
+
+  /* 下载 */
+  .download{border:3px solid var(--ink);background:var(--ink);color:var(--paper);padding:28px 26px;margin:52px 0 8px;position:relative}
+  .download::before{content:"";position:absolute;top:-3px;left:-3px;width:62px;height:12px;background:var(--red)}
+  .download h2{color:var(--paper);border-bottom-color:var(--paper);font-size:29px;margin-bottom:8px}
+  .download h2::before{background:var(--red)}
+  .download p{font-size:15px;font-weight:600;color:rgba(242,239,230,.82);max-width:640px;margin-bottom:20px}
+  .dl-acts{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .dl-acts .btn{background:var(--red);border-color:var(--red);color:var(--paper)}
+  .dl-acts .btn:hover{box-shadow:inset 0 -5px 0 var(--paper)}
+  .dl-acts .btn.ghost{background:transparent;color:var(--paper);border-color:var(--paper)}
+  .dl-acts .btn.ghost:hover{box-shadow:inset 0 -5px 0 var(--red)}
+  .verify{margin-top:18px;font-family:var(--fm);font-size:11px;font-weight:400;color:rgba(242,239,230,.7);border-top:1px solid rgba(242,239,230,.25);padding-top:13px;line-height:1.7}
+  .verify code{display:block;background:rgba(242,239,230,.08);border:1px solid rgba(242,239,230,.25);padding:8px 10px;margin-top:6px;color:var(--paper);white-space:pre-wrap;word-break:break-all}
+
+  footer{margin-top:38px;padding-top:17px;border-top:3px solid var(--ink);text-align:center;font-size:12.5px;font-weight:700;letter-spacing:.03em;line-height:1.9}
   footer .red{color:var(--red)}
-  @media (max-width:620px){
-    .sheet{padding:22px 18px 20px}
-    .meta-cols{grid-template-columns:1fr}
+  footer a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--ink)}
+  footer a:hover{color:var(--red);border-color:var(--red)}
+  footer .mono{font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--blue);text-transform:uppercase}
+
+  /* 适用人群 */
+  .audience{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:48px 0}
+  .persona{background:var(--white);border:2px solid var(--ink);box-shadow:5px 5px 0 rgba(23,23,26,.16);padding:18px 18px 20px;position:relative}
+  .persona::before{content:"";position:absolute;top:-2px;left:-2px;width:42px;height:8px;background:var(--red)}
+  .persona .tag{display:inline-block;font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--red);color:var(--paper);padding:3px 9px;margin-bottom:11px}
+  .persona h3{font-family:var(--fd);font-size:17px;font-weight:900;letter-spacing:.01em;margin-bottom:8px;line-height:1.2}
+  .persona p{font-size:13.5px;font-weight:600;color:var(--muted);line-height:1.55}
+
+  /* 展示带：文字 + 视觉 两栏交替 */
+  .showcase{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center;margin:52px 0}
+  .sc-text p{font-size:15px;font-weight:600;color:var(--ink);line-height:1.62;margin-bottom:13px;max-width:440px}
+  .sc-text p b{color:var(--red)}
+  .sc-vis{flex:none}
+  /* 完成情况：便签盒（项目真实实现 = 撕下的便签堆叠） */
+  .box{border:2px solid var(--ink);background:var(--white);box-shadow:8px 8px 0 rgba(23,23,26,.16);padding:20px 18px;max-width:248px}
+  .box .n{position:relative;background:var(--white);border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(23,23,26,.18);padding:9px 9px 9px 17px;font-size:11.5px;font-weight:700;line-height:1.3;margin:0 auto}
+  .box .n + .n{margin-top:-15px}
+  .box .n::before{content:"";position:absolute;top:0;left:0;width:14px;height:14px;background:var(--red)}
+  .box .n.b::before{background:var(--blue)}
+  .box .n.k::before{background:var(--ink)}
+  .box .n:first-child{transform:rotate(-2.5deg)}
+  .box .n:nth-child(2){transform:rotate(1.5deg)}
+  .box .n:last-child{transform:rotate(-1deg);z-index:3}
+
+  /* 完成情况：便签盒说明 */
+  .pile-cap{font-family:var(--fm);font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--blue)}
+
+  /* FAQ 已移除 */
+
+  @media (max-width:880px){
+    .hero{grid-template-columns:1fr;gap:34px}
     .features{grid-template-columns:1fr}
-    .masthead img{width:64px;height:64px}
-    .masthead h1{font-size:20px}
+    .audience{grid-template-columns:1fr}
+    .showcase{grid-template-columns:1fr;gap:22px}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 16px calc(40px + env(safe-area-inset-bottom))}
+    .topbar{padding:10px 16px;margin-bottom:36px}
+    .hero h1{font-size:clamp(44px,13vw,60px)}
+    .titleblock{display:none}
+    .brand .en{display:none}
+    .top-acts{width:100%}
+    .top-acts .btn{flex:1}
+    .download{padding:24px 18px}
+    .app-body{grid-template-columns:84px 1fr}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;scroll-behavior:auto!important}
   }
 </style>
 </head>
 <body>
-<div class="page">
-  <div class="sheet">
-    <div class="corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-
-    <div class="masthead">
-      <img src="../assets/logo.png" alt="晷刻工作室">
-      <div class="tt">
-        <h1>知墙</h1>
-        <div class="sub">学习工作台 · <em>Constructivism</em> · v1.0.0</div>
-      </div>
-    </div>
-
-    <p class="lead">考研 / 学期 / 待办 / 生活四面便签墙 + 作息侧栏 + 课程表。数据全本地，双击即用。</p>
-
-    <h2>下载</h2>
-    <div class="btns">
-      <a class="btn" href="https://github.com/Neutr0N_Star/MyMemoBoards/releases/latest">
-        <span>进入 GitHub Releases</span><span class="arrow">↓</span>
-      </a>
-      <a class="btn alt" href="https://github.com/Neutr0N_Star/MyMemoBoards">
-        <span>源码仓库</span><span class="arrow">→</span>
-      </a>
-    </div>
-
-    <div class="meta-cols">
-      <div class="meta-box">
-        <h3>Windows 便携版</h3>
-        <p>下载 <code>MyMemoBoards-1.0.0-portable.exe</code>，双击即开。数据生成在 exe 同目录 <code>data/</code>。</p>
-      </div>
-      <div class="meta-box">
-        <h3>Windows 安装版</h3>
-        <p>下载 <code>MyMemoBoards-1.0.0-setup.exe</code>，安装后开始菜单 / 桌面快捷方式名为「知墙」。</p>
-      </div>
-    </div>
-
-    <h2>功能亮点</h2>
-    <ul class="features">
-      <li>四面便签墙：考研 / 学期 / 待办 / 生活</li>
-      <li>作息侧栏 + 现有指针 + 明天预览</li>
-      <li>课程表完整编辑：节次可增减、起止可改</li>
-      <li>考试倒计时：多节点、里程碑变色</li>
-      <li>便签盒 / 收纳箱：撕下、粘回、永久移除</li>
-      <li>每日任务：撕掉后第二天自动贴回</li>
-      <li>AI 周报：支持本地 Ollama，Key 可脱敏导出</li>
-      <li>桌面版：置顶 / 系统通知 / 自启 / 自动更新</li>
-    </ul>
-
-    <h2>SHA256 校验</h2>
-    <pre>Get-FileHash -Algorithm SHA256 .\MyMemoBoards-1.0.0-portable.exe</pre>
-    <p style="font-size:12.5px;font-weight:700">将输出与发布页 <code>SHA256SUMS.txt</code> 对比，一致后再运行。</p>
-    <div class="warn"><b>提示：</b>当前 exe 未做代码签名，Windows SmartScreen 可能提示「Windows 已保护你的电脑」。选择「更多信息 → 仍要运行」即可。</div>
-
-    <h2>数据与隐私</h2>
-    <ul class="features">
-      <li>便签、作息、课程、设置只存本机</li>
-      <li>浏览器版用 localStorage，桌面版存 exe 同目录 <code>data/</code></li>
-      <li>AI 周报只在主动配置接口时发送到你自己填的 Base URL</li>
-      <li>导出 JSON 默认文件名为「知墙-YYYY-MM-DD.json」，且 API Key 已脱敏；桌面版用 safeStorage 加密</li>
-    </ul>
-
-    <footer>
-      MIT License · Neutr0N_Star（晓星）· <span class="red">晷刻工作室</span>
-    </footer>
-  </div>
+<div class="regmarks" aria-hidden="true"><i class="c-tl"></i><i class="c-tr"></i><i class="c-bl"></i><i class="c-br"></i></div>
+<div class="titleblock" aria-hidden="true">
+  <b>MYMEMO<em>BOARDS</em></b>
+  <span>REV <em>1.0.0</em></span>
+  <span>SCALE <em>1:1</em></span>
+  <span>DWG <em>晷刻</em></span>
+  <span>SHEET <em>A</em></span>
 </div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="mark">知</span>
+    <span class="stack">知墙<span class="en">MYMEMOBOARDS</span></span>
+  </div>
+  <div class="top-acts">
+    <a class="btn" href="#download"><span>下载</span><span class="arrow">↓</span></a>
+    <a class="btn ghost" href="https://github.com/Neutr0N_Star/MyMemoBoards">GitHub</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <h1>知墙<span class="en">MYMEMOBOARDS</span></h1>
+      <p class="lead">一个便签墙可自由增删的工作台。复习、待办、生活分开贴，做完撕下来归档。<b>Windows 桌面应用，数据全在本机</b>——不上云，不注册。</p>
+      <div class="hero-cta">
+        <a class="btn big red" href="#download"><span>下载 Windows 版</span><span class="arrow">↓</span></a>
+        <a class="btn ghost big" href="https://github.com/Neutr0N_Star/MyMemoBoards">在 GitHub 看源码</a>
+      </div>
+      <p class="hero-note">免费 · MIT 开源 · 当前仅支持 Windows</p>
+    </div>
+
+    <!-- 精确还原 App 真实界面 -->
+    <div class="app" role="img" aria-label="知墙应用界面：顶栏并列考试倒计时，左侧今日时间轴，右侧两面便签墙与完成情况">
+      <div class="app-bar">
+        <span class="logo">知</span>
+        <span class="nm">知墙</span>
+        <span class="pills">
+          <i>初试 <b>78</b></i>
+          <i>教资 <b>112</b></i>
+          <i class="hot">复试 <b>25</b></i>
+        </span>
+      </div>
+      <div class="app-body">
+        <div class="app-side">
+          <h4>今日时间轴</h4>
+          <div class="tl-row"><span class="t">08</span>早八</div>
+          <div class="tl-row"><span class="t">10</span>自习</div>
+          <div class="tl-row"><span class="t">14</span>补课</div>
+          <div class="tl-row"><span class="t">19</span>夜跑</div>
+          <div class="tl-now" aria-hidden="true"><span>现在</span></div>
+        </div>
+        <div class="app-main">
+          <div class="zone">
+            <div class="zh">备考墙</div>
+            <div class="notes">
+              <div class="note">数学真题卷三</div>
+              <div class="note b">英语作文模板</div>
+              <div class="note k">政治冲刺</div>
+            </div>
+          </div>
+          <div class="zone">
+            <div class="zh">项目墙</div>
+            <div class="notes">
+              <div class="note">梳理需求</div>
+              <div class="note b">写周报</div>
+              <div class="note add">+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="app-foot">
+        <span>便签盒 6</span>
+        <span>收纳箱 23</span>
+        <span>每日任务 2</span>
+        <span class="stack-vis" aria-hidden="true"><i style="height:6px"></i><i style="height:9px"></i><i style="height:12px"></i><i style="height:15px"></i><i style="height:18px"></i></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 适合谁 -->
+  <h2>适合谁</h2>
+  <div class="audience">
+    <div class="persona"><span class="tag">备考</span><h3>考研 / 教资 / 期末</h3><p>多场考试倒排、课表和作息打架，一面墙盯一个阶段，倒计时自己分档变红。</p></div>
+    <div class="persona"><span class="tag">日常</span><h3>待办与生活</h3><p>买菜、还信用卡、约体检，随手贴随手撕，不值得塞进大待办软件里养。</p></div>
+    <div class="persona"><span class="tag">手头</span><h3>几件正在进行的事</h3><p>需求、周报、杂活分墙放，做完撕下进盒，进度一直看得见。</p></div>
+  </div>
+
+  <!-- 功能 -->
+  <h2>它能做什么</h2>
+  <div class="features">
+    <div class="card">
+      <h3>便签墙可增删</h3>
+      <p>可按需加墙、删墙、改名、拖顺序、设默认墙，复习、待办、生活分开贴。</p>
+    </div>
+    <div class="card">
+      <h3>贴、撕、粘</h3>
+      <p>写上去是贴，做完撕下进便签盒，想恢复就粘回墙上。</p>
+    </div>
+    <div class="card">
+      <h3>今日时间轴</h3>
+      <p>课表和作息按时间段叠在同一条轴上，重叠一眼可见——哪节课该去、哪段能空着，清清楚楚。</p>
+    </div>
+    <div class="card">
+      <h3>考试倒计时</h3>
+      <p>顶栏并排多个考试节点（初试/复试/教资…），剩天数自动分档变色，越近越扎眼。</p>
+    </div>
+    <div class="card">
+      <h3>课程表</h3>
+      <p>节次行数能加减，每节课起止时间随便改，改完立刻反映到时间轴；周课表、只读预览都有。</p>
+    </div>
+    <div class="card">
+      <h3>数据全在本机</h3>
+      <p>默认不联网、不上云。数据全在本机，卸载可清干净；想备份就导出 JSON 或开自动备份。</p>
+    </div>
+    <div class="card" style="grid-column:1/-1">
+      <h3>课前与到期提醒</h3>
+      <p>到点前弹系统通知——该上课了、考试和作业快到期限了，自动弹出提示框。</p>
+    </div>
+  </div>
+
+  <!-- 每周复盘 -->
+  <h2>每周自己复盘</h2>
+  <div class="sc-text" style="max-width:680px">
+    <p>点一下，把这一周的便签、完成、逾期、考试揉成一份复盘——不用自己周末坐那回想这周干了啥。</p>
+    <p>接<b>你自己的</b>模型：填 Base URL 和 Key 就行，本地跑 Ollama 一分钱不花；Key 存在本机、加密，不外发。</p>
+    <p>不想接 AI 也完全没关系，它就是个便签墙，复盘是额外功能。</p>
+  </div>
+
+  <!-- 完成情况 -->
+  <h2>干了多少，看得见</h2>
+  <div class="showcase">
+    <div class="sc-vis">
+      <div class="box" aria-hidden="true">
+        <div class="n k">政治冲刺</div>
+        <div class="n b">英语模板</div>
+        <div class="n">数学真题</div>
+      </div>
+      <span class="pile-cap">本周撕下 18 · 累计 142</span>
+    </div>
+    <div class="sc-text">
+      <p>撕下的便签进便签盒，满一周自动落进收纳箱；盒和箱都能粘回墙上，或彻底丢掉。</p>
+      <p>左下角一直数着：本周撕了多少、累计撕了多少，便签盒随张数越堆越满——成就感不用自己记。</p>
+    </div>
+  </div>
+
+  <!-- 下载 -->
+  <section class="download" id="download">
+    <h2>下载知墙</h2>
+    <p>免费、MIT 开源。运行安装包即用，下完建议用 SHA256 核对一下。</p>
+    <div class="dl-acts">
+      <a class="btn" href="#"><span>安装版 setup.exe</span><span class="arrow">↓</span></a>
+      <a class="btn ghost" href="https://github.com/Neutr0N_Star/MyMemoBoards/releases"><span>GitHub Releases</span></a>
+    </div>
+    <div class="verify">
+      校验（PowerShell）：
+      <code>Get-FileHash -Algorithm SHA256 .\MyMemoBoards-1.0.0-setup.exe
+# 与 release/SHA256SUMS.txt 中对应行比对</code>
+    </div>
+  </section>
+
+  <footer>
+    MIT License · <span class="red">晷刻工作室</span><br>
+    <a href="https://github.com/Neutr0N_Star/MyMemoBoards">源码仓库</a> ·
+    <a href="https://github.com/Neutr0N_Star/MyMemoBoards/releases">Releases</a> ·
+    <a href="https://github.com/Neutr0N_Star/MyMemoBoards/issues">反馈</a><br>
+    <span class="mono">桌面应用 · Electron · 数据本地</span>
+  </footer>
+
+</main>
 </body>
 </html>
