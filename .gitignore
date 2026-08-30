@@ -1,0 +1,16 @@
+# 依赖
+node_modules/
+
+# 运行期数据（用户便签内容，随程序走但不入库）
+data-dev/
+data/
+
+# 打包产物
+release/
+release-*/
+dist/
+*.log
+
+# electron-builder 缓存
+.builder-cache/
+.builder-electron-cache/

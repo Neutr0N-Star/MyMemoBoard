@@ -4,7 +4,12 @@
 
 ## 快速开始
 
-直接双击打开 `index.html` 即可（浏览器拖入也行）。无需安装、无需服务器、无网络依赖。
+**推荐 · 桌面应用**：双击桌面上的「星之间」启动器 → 独立窗口，无浏览器地址栏/标签页，视觉完整。
+
+**临时 · 浏览器**：双击 `index.html` 即可。无需安装、无需服务器、无网络依赖。
+
+> ⚠️ 两种模式的便签数据**分开存储**（浏览器存在浏览器 profile 里，桌面版存在项目内 `data-dev/`）。
+> 从浏览器切到桌面版，请先在浏览器里「导出 JSON」，再到桌面版「导入 JSON」。
 
 ## 功能
 
@@ -32,6 +37,37 @@
 - 交互全部用内联输入框（不依赖 `prompt()`/`alert()`，iframe 预览环境可用）。
 - 换皮 = 只改 `index.html` 的 `<style>` 与可选 HTML 装饰，`<script>` 块保持与基座一致。
 
+## 桌面应用模式（Electron 外壳）
+
+`index.html` 零改动，Electron 只提供一层窗口外壳。业务逻辑仍是纯前端 localStorage。
+
+| 文件 | 作用 |
+|---|---|
+| `main.js` | 主进程：窗口外壳 + 数据目录绿色化 + 单实例锁 |
+| `package.json` | 应用声明与脚本（`npm start`） |
+| `assets/icon.ico` | 构成主义图标，由 `assets/make-icon.py` 生成（改脚本即重画，可复现） |
+| `.gitignore` | 排除 `node_modules/` 与运行期数据目录 |
+
+**设计要点**
+
+- **数据随程序走**：开发模式存 `data-dev/`，打包后存 exe 同目录 `data/`，不写 C 盘 AppData。整个文件夹拷走即迁移，卸载不留残余。
+- **单实例锁**：重复点启动器不会开第二个窗口，而是把已有窗口拉回前台。
+- **无菜单栏**：`autoHideMenuBar` + `setMenuBarVisibility(false)`，界面保持纯粹的构成主义外观。
+- **零 node 能力**：`nodeIntegration: false` + `contextIsolation: true`，不引入任何 node 依赖。
+
+**启动方式**
+
+- 桌面启动器：`C:\Users\19747\Desktop\星之间.vbs`（静默启动，无控制台黑窗）
+- 命令行：`npm start`
+
+**已知环境坑**
+
+`ELECTRON_RUN_AS_NODE=1` 会让 Electron 退化成纯 Node 模式——窗口永远起不来，报
+`Cannot read properties of undefined (reading 'isPackaged')`。
+该变量**不在系统级/用户级**（查过 HKCU/HKLM 注册表），通常是某些开发工具链临时注入。
+桌面启动器已在启动前清除它，命令行启动前如遇同样报错，手动 `set ELECTRON_RUN_AS_NODE=` 即可。
+
 ## 入口
 
 - 门牌：`.overview.md`；蓝图：`notes.md`；产物：`index.html` + `assets/archive/`。
+- 桌面外壳：`main.js` + `package.json` + `assets/icon.ico`；启动器在桌面。

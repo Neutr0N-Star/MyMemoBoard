@@ -1,0 +1,17 @@
+{
+  "name": "xingzhijian",
+  "version": "1.0.0",
+  "description": "星之间 · 学习工作台：考研/学期/待办/生活四区便签墙 + 作息侧栏 + 课程表浮窗（构成主义视觉）",
+  "main": "main.js",
+  "author": "Neutr0N_Star",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable",
+    "dir": "electron-builder --dir"
+  },
+  "devDependencies": {
+    "electron": "^43.4.0"
+  }
+}
