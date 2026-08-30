@@ -50,12 +50,12 @@ input,select{font-family:inherit;font-size:16px;color:var(--ink)}
 .wrap{max-width:none;margin:0 auto;padding:14px 24px calc(20px + env(safe-area-inset-bottom))}
 
 /* ===== 顶栏（图纸图签） ===== */
-header{display:flex;align-items:center;gap:10px;padding:12px 16px;margin-bottom:14px;flex-wrap:wrap;background:var(--white);border:2px solid var(--ink);position:relative}
-header::before{content:"";position:absolute;top:-2px;left:-2px;width:40px;height:9px;background:var(--red)}
+header{display:flex;align-items:center;gap:10px;padding:12px 16px 12px 104px;margin-bottom:14px;flex-wrap:wrap;background:var(--white);border:2px solid var(--ink);position:relative}
+header::before{content:"";position:absolute;top:-2px;left:94px;width:40px;height:9px;background:var(--red)}
 .brand{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:900;letter-spacing:-.02em;font-family:var(--fd);position:relative}
 .brand svg{color:var(--red);width:19px;height:19px;flex:none}
 .brand::after{content:"A-01";font-size:9px;font-weight:900;color:#fff;background:var(--ink);padding:2px 6px;letter-spacing:.12em;margin-left:2px}
-.logo{width:42px;height:42px;object-fit:contain;border:2px solid var(--ink);border-radius:0;background:var(--paper);flex:none;padding:4px;display:block}
+.logo{position:absolute;top:-22px;left:6px;width:88px;height:88px;object-fit:contain;border-radius:0;background:var(--paper);z-index:5;display:block}
 .cd-pill{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:900;letter-spacing:.05em;color:var(--ink);padding:4px 10px;border:2px solid var(--ink);background:var(--white)}
 .cd-pill::after{content:"";width:8px;height:8px;background:var(--red);flex:none}
 .cd-pill b{font-size:25px;font-weight:900;color:#fff;background:var(--ink);padding:1px 12px;font-variant-numeric:tabular-nums;line-height:1.3}
@@ -118,6 +118,13 @@ header::before{content:"";position:absolute;top:-2px;left:-2px;width:40px;height
 .zh .tt+.plus{margin-left:7px}
 .zh .zdel{width:21px;height:21px;border:1.5px solid var(--ink);border-radius:0;background:var(--white);color:var(--red);font-weight:900;font-size:13px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;flex:none;margin-left:7px}
 .zh .zdel:hover{background:var(--red);color:#fff}
+.zh .zdel.arm{background:var(--red);color:#fff;width:auto;padding:0 7px;font-size:11px;letter-spacing:.02em}
+.zh .zdef{width:21px;height:21px;border:1.5px solid var(--ink);border-radius:0;background:var(--white);color:var(--blue);font-weight:900;font-size:11px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;flex:none;margin-left:7px}
+.zh .zdef:hover{background:var(--blue);color:#fff}
+.zh .zdef.on{background:var(--ink);color:#fff}
+.zh .zgrip{width:16px;height:21px;border:none;background:none;color:var(--ink);opacity:.4;cursor:grab;padding:0;display:flex;align-items:center;justify-content:center;flex:none;margin-right:2px}
+.zh .zgrip:hover{opacity:1}
+.zh .zgrip.dragging{opacity:1;cursor:grabbing}
 .zh .bname{cursor:text}
 .brename{width:78px;font-size:12px;font-weight:900;font-family:var(--fd);padding:1px 4px;border:1.5px solid var(--red);border-radius:0;background:#fff}
 .zone-add{border:1.5px dashed var(--ink);min-height:110px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:.5;transition:opacity .15s,background .15s}
@@ -145,7 +152,9 @@ header::before{content:"";position:absolute;top:-2px;left:-2px;width:40px;height
 .note .tear:hover{background:var(--red);color:#fff;box-shadow:inset 0 0 0 2px var(--white)}
 .note .tear svg{width:11px;height:11px}
 .note[draggable="true"]{cursor:grab}
-.note.empty-hint{background:var(--paper);box-shadow:inset 0 0 0 1.5px var(--ink);color:var(--ink);font-size:12px;font-weight:700;text-align:center;padding:16px 8px;transform:none;border:none;aspect-ratio:auto;justify-content:center}
+.note.empty-hint{background:var(--paper);box-shadow:inset 0 0 0 1.5px var(--ink);color:var(--ink);font-size:12px;font-weight:700;text-align:center;padding:16px 8px;transform:none;border:none;aspect-ratio:auto;justify-content:center;display:flex;flex-direction:column;gap:4px;align-items:center;line-height:1.5}
+.note.empty-hint b{font-size:12.5px;letter-spacing:.02em}
+.note.empty-hint span{font-size:10.5px;font-weight:700;opacity:.6}
 .note.empty-hint::before,.note.empty-hint::after{display:none}
 .note.empty-hint .tx{border:none;padding:0;overflow:visible;font-weight:700;color:var(--ink)}
 
@@ -244,6 +253,11 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 .tl-blk .n{display:block;font-size:10.5px;font-weight:900;color:var(--ink);line-height:1.2;word-break:break-all;padding-left:12px}
 .tl-blk .t{display:block;font-size:9px;font-weight:900;color:var(--ink);opacity:.7;line-height:1.2;padding-left:12px;font-variant-numeric:tabular-nums}
 .tl-blk:hover{background:var(--paper)}
+.tl-empty{position:absolute;left:8px;right:8px;top:12px;text-align:center;font-size:11px;font-weight:900;color:var(--ink);opacity:.5;border:1.5px dashed var(--ink);padding:10px 6px;line-height:1.6;pointer-events:none;display:flex;flex-direction:column;gap:2px}
+.cd-hint{opacity:.55;cursor:pointer;border-style:dashed;letter-spacing:.08em}
+.cd-hint:hover{opacity:1;background:var(--paper)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:12.5px;font-weight:900;padding:9px 18px;border:2px solid var(--ink);letter-spacing:.03em;z-index:200;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;max-width:82vw}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .tl-now{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--red);z-index:6;pointer-events:none}
 .tl-now i{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:11px;height:11px;background:var(--red);border:2px solid var(--ink)}
 .tl-now span{position:absolute;right:0;top:3px;font-size:9px;font-weight:900;color:#fff;background:var(--red);padding:1px 4px;letter-spacing:.04em}
@@ -533,6 +547,16 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
   </div>
 </div>
 
+<!-- 自绘确认框（不依赖 confirm/alert，iframe 预览也弹） -->
+<div class="mask" id="mConfirm">
+  <div class="modal" style="max-width:430px">
+    <h3>确认操作<button class="x" onclick="cfNo()">×</button></h3>
+    <div class="field"><p id="cfMsg" style="font-size:13px;line-height:1.75;font-weight:700"></p></div>
+    <div class="foot"><button class="btn" onclick="cfNo()">取消</button><button class="btn danger" onclick="cfYes()">确定</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
 <!-- 课程表完整编辑页 -->
 <div class="ttpage" id="ttPage">
   <div class="bar">
@@ -571,36 +595,14 @@ var DAYKEY=['mon','tue','wed','thu','fri','sat','sun'];
 var state=null;
 
 function defaultState(){
-  var t=new Date();t.setFullYear(t.getFullYear());
   var s={
     v:1,
-    settings:{examDate:'2026-12-19',exams:[{id:uid(),name:'考研初试',date:'2026-12-19'}],periods:defaultPeriods(),courseFilter:'',ai:{baseUrl:'',key:'',model:'gpt-4o-mini'},notify:true,snapshots:[],boards:defaultBoards()},
-    notes:[
-      {id:uid(),board:'kaoyan',title:'英语真题精讲一套（2019 阅读）',due:isoOffset(-2),time:'',courseId:'',done:false,tone:'day',createdAt:Date.now()},
-      {id:uid(),board:'kaoyan',title:'高数每日一练 · 定积分专题',due:isoOffset(0),time:'',courseId:'',done:false,tone:'night',createdAt:Date.now()},
-      {id:uid(),board:'course',title:'操作系统论文查重并提交',due:isoOffset(1),time:'',courseId:'c4',done:false,tone:'morning',createdAt:Date.now()},
-      {id:uid(),board:'todo',title:'图书馆还书（三本）',due:isoOffset(4),time:'',courseId:'',done:false,tone:'day',createdAt:Date.now()},
-      {id:uid(),board:'life',title:'给爸妈打电话',due:isoOffset(0),time:'21:00',courseId:'',done:false,tone:'night',createdAt:Date.now()}
-    ],
-    schedule:[
-      {id:uid(),time:'07:00',label:'起床 + 早饭'},
-      {id:uid(),time:'08:30',label:'自习 · 数学'},
-      {id:uid(),time:'12:00',label:'午饭 + 午休'},
-      {id:uid(),time:'14:00',label:'上课 / 实验'},
-      {id:uid(),time:'19:00',label:'自习 · 英语 + 政治'},
-      {id:uid(),time:'23:00',label:'洗漱 · 睡觉'}
-    ],
-    courses:[
-      {id:'c1',name:'高等数学 A'},{id:'c2',name:'数据结构'},
-      {id:'c3',name:'大学英语 III'},{id:'c4',name:'操作系统'}
-    ],
-    timetable:{
-      'mon-1':'高等数学 A','mon-3':'数据结构',
-      'tue-1':'大学英语 III','tue-3':'操作系统',
-      'wed-1':'高等数学 A','thu-3':'数据结构','fri-1':'大学英语 III'
-    }
+    settings:{examDate:'',exams:[],periods:defaultPeriods(),courseFilter:'',ai:{baseUrl:'',key:'',model:'gpt-4o-mini'},notify:true,snapshots:[],boards:defaultBoards(),defaultBoard:'todo'},
+    notes:[],
+    schedule:[],
+    courses:[],
+    timetable:{}
   };
-  s.notes.forEach(function(n){n.priority='normal';n.stored=false;n.storedAt=null;n.daily=false;n.lastDone=null;});
   return s;
 }
 function uid(){return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4)}
@@ -661,6 +663,10 @@ function migrateSettings(){
   if(!state.settings.snapshots)state.settings.snapshots=[];
   if(!state.settings.boards||!state.settings.boards.length)state.settings.boards=defaultBoards();
   state.settings.boards.forEach(function(b){if(!b.id)b.id='w'+uid().slice(0,6);if(!b.name)b.name=b.id;});
+  if(!state.settings.defaultBoard)state.settings.defaultBoard='todo';
+  var dbOk=false;
+  state.settings.boards.forEach(function(b){if(b.id===state.settings.defaultBoard)dbOk=true;});
+  if(!dbOk)state.settings.defaultBoard=state.settings.boards[0].id;
 }
 function save(){localStorage.setItem(LS,JSON.stringify(state));}
 
@@ -713,21 +719,22 @@ function snapshot(){
 function restoreSnapshot(date){
   var arr=(state.settings&&state.settings.snapshots)||[];
   var s=arr.filter(function(x){return x.date===date})[0];
-  if(!s){alert('没找到这份快照');return;}
-  if(!confirm('恢复到 '+date+' 的快照？当前数据会被这份快照覆盖。'))return;
-  var d=s.data||{};
-  state.notes=d.notes||[];
-  state.schedule=d.schedule||[];
-  state.courses=d.courses||[];
-  state.timetable=d.timetable||{};
-  var ns;
-  try{ns=JSON.parse(JSON.stringify(d.settings||{}));}catch(e){ns={};}
-  delete ns.snapshots;
-  var keep=(state.settings&&state.settings.snapshots)||[];
-  state.settings=ns;
-  state.settings.snapshots=keep;
-  migrateSettings();migrateNotes();
-  save();refreshAll();alert('已恢复到 '+date);
+  if(!s){toast('没找到这份快照');return;}
+  askConfirm('恢复到 '+date+' 的快照？当前数据会被这份快照覆盖。',function(){
+    var d=s.data||{};
+    state.notes=d.notes||[];
+    state.schedule=d.schedule||[];
+    state.courses=d.courses||[];
+    state.timetable=d.timetable||{};
+    var ns;
+    try{ns=JSON.parse(JSON.stringify(d.settings||{}));}catch(e){ns={};}
+    delete ns.snapshots;
+    var keep=(state.settings&&state.settings.snapshots)||[];
+    state.settings=ns;
+    state.settings.snapshots=keep;
+    migrateSettings();migrateNotes();
+    save();refreshAll();toast('已恢复到 '+date);
+  });
 }
 function dropNote(id){
   state.notes=state.notes.filter(function(x){return x.id!==id});
@@ -844,6 +851,11 @@ function renderTimeline(){
   }
   cb.forEach(function(b){put(L,b,'c','课表第 '+b.period+' 节')});
   sb.forEach(function(b){put(R,b,'s','点一下改这段作息')});
+  if(!sb.length){
+    var hint=document.createElement('div');hint.className='tl-empty';
+    hint.innerHTML='<b>右侧还没排作息</b><span>点 + 自己填时间加一段</span>';
+    R.appendChild(hint);
+  }
   AX.style.background='linear-gradient(to bottom,'+tlGradient(cb,sb)+')';
   var tt=document.getElementById('tlTitle');
   if(tt)tt.textContent=tlView?'明日时间轴':'今日时间轴';
@@ -883,7 +895,7 @@ function saveSched(){
   var tv=document.getElementById('sTime').value;
   var lv=document.getElementById('sLabel').value.trim();
   if(!tv){
-    alert('得填个时间，不然这段没法在时间轴上定位。');
+    toast('得填个时间，不然这段没法在时间轴上定位。');
     var el=document.getElementById('sTime');if(el&&el.focus)el.focus();
     return;
   }
@@ -917,7 +929,15 @@ function addSched(){
   },80);
 }
 function renderCourses(){
-  var box=document.getElementById('courseList');box.innerHTML='';
+  var box=document.getElementById('courseList');if(!box)return;
+  box.innerHTML='';
+  if(!state.courses.length){
+    var h=document.createElement('div');h.className='empty';
+    h.style.cssText='grid-column:auto;text-align:left;padding:12px 10px;font-size:12px;line-height:1.7';
+    h.innerHTML='<b>还没有课程</b><br>顶栏「课程表」→「完整编辑」→ 课程清单 + 加课程';
+    box.appendChild(h);
+    return;
+  }
   state.courses.forEach(function(c){
     var n=state.notes.filter(function(x){return !x.done&&x.courseId===c.id}).length;
     var row=document.createElement('div');row.className='crow';
@@ -934,11 +954,14 @@ function renderCourses(){
         if(done)return;done=true;
         var v=inp.value.trim();
         if(!v){
-          if(confirm('删除课程「'+c.name+'」？它的待办便签会保留但解除关联')){
+          askConfirm('删除课程「'+c.name+'」？它的待办便签会保留但解除关联',function(){
             state.courses=state.courses.filter(function(x){return x.id!==c.id});
             state.notes.forEach(function(x){if(x.courseId===c.id)x.courseId=''});
-          }
-        }else if(v!==c.name){c.name=v;}
+            save();refreshAll();
+          });
+          return;
+        }
+        if(v!==c.name)c.name=v;
         save();refreshAll();
       };
       inp.onblur=function(){commit()};
@@ -960,6 +983,17 @@ function renderZones(){
     var sec=document.createElement('section');
     sec.className='zone';sec.dataset.board=b;sec.id='zone-'+b;
     var zh=document.createElement('div');zh.className='zh';
+    // 拖拽手柄：拖它换墙的位置（与便签拖放互不干扰）
+    var grip=document.createElement('button');grip.className='zgrip';grip.title='拖我换墙的位置';
+    grip.draggable=true;
+    grip.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h8M8 12h8M8 18h8"/></svg>';
+    grip.addEventListener('dragstart',function(e){
+      e.dataTransfer.setData('text/x-board',b);
+      e.dataTransfer.effectAllowed='move';
+      grip.classList.add('dragging');
+    });
+    grip.addEventListener('dragend',function(){grip.classList.remove('dragging');});
+    zh.appendChild(grip);
     var ico=document.createElement('svg');ico.className='zh-ico';
     ico.setAttribute('width','15');ico.setAttribute('height','15');
     ico.innerHTML='<use href="#arrR"/>';
@@ -976,9 +1010,14 @@ function renderZones(){
       tt.onclick=function(){openTT();};
       zh.appendChild(tt);
     }
+    var isDef=state.settings.defaultBoard===b;
+    var def=document.createElement('button');def.className='zdef'+(isDef?' on':'');def.title=isDef?'这是默认墙 · 删别的大框时便签自动挪到这里':'设为大框默认墙';
+    def.textContent='D';
+    def.onclick=function(){setDefaultBoard(b);};
+    zh.appendChild(def);
     var del=document.createElement('button');del.className='zdel';del.title='删掉这面墙';
     del.textContent='×';
-    del.onclick=function(){removeBoard(b);};
+    del.onclick=function(){askRemoveBoard(b,del);};
     zh.appendChild(del);
     var plus=document.createElement('button');plus.className='plus';plus.title='贴便签';
     plus.textContent='+';
@@ -1048,19 +1087,58 @@ function renameBoard(b,nm){
     if(e.key==='Escape'){done=true;refreshAll();}
   };
 }
+function setDefaultBoard(b){
+  state.settings.defaultBoard=b;
+  save();refreshAll();
+}
+function askRemoveBoard(b,btn){
+  if(btn.dataset&&btn.dataset.arm==='1'){removeBoard(b);return;}
+  btn.dataset.arm='1';
+  btn.textContent='确认?';
+  btn.classList.add('arm');
+  btn.title='再点一次确认删除';
+  setTimeout(function(){
+    if(btn.dataset&&btn.dataset.arm==='1'){
+      delete btn.dataset.arm;
+      btn.textContent='×';
+      btn.classList.remove('arm');
+      btn.title='删掉这面墙';
+    }
+  },3000);
+}
 function removeBoard(b){
   var arr=state.settings.boards||defaultBoards();
   var bd=arr.filter(function(x){return x.id===b})[0];
   if(!bd)return;
-  if(!confirm('删掉这面墙「'+bd.name+'」？\n墙上的便签会移到别的墙，不丢失。'))return;
   arr.splice(arr.indexOf(bd),1);
   if(!arr.length)arr.push(defaultBoards()[0]);
-  // 便签挪到第一面非科目墙；都删光了就挪到剩下的第一面
-  var target=null;
-  arr.forEach(function(x){if(!target&&x.id!=='course')target=x.id;});
-  if(!target)target=arr[0].id;
+  // 删掉的正好是默认墙 → 默认墙换到剩下第一面非科目墙
+  if(state.settings.defaultBoard===b){
+    var nb=null;
+    arr.forEach(function(x){if(!nb&&x.id!=='course')nb=x.id;});
+    state.settings.defaultBoard=nb||arr[0].id;
+  }
+  // 便签挪到默认墙；默认墙不存在（或没设）就找第一面非科目墙
+  var target=state.settings.defaultBoard;
+  var exists=false;
+  arr.forEach(function(x){if(x.id===target)exists=true;});
+  if(!exists){
+    target=null;
+    arr.forEach(function(x){if(!target&&x.id!=='course')target=x.id;});
+    target=target||arr[0].id;
+  }
   state.notes.forEach(function(n){if(n.board===b)n.board=target;});
   if(state.settings.courseFilter&&b==='course')state.settings.courseFilter='';
+  save();refreshAll();
+}
+function moveBoard(src,dst){
+  if(src===dst)return;
+  var arr=state.settings.boards||[];
+  var si=-1,di=-1;
+  arr.forEach(function(x,i){if(x.id===src)si=i;if(x.id===dst)di=i;});
+  if(si<0||di<0)return;
+  var it=arr.splice(si,1)[0];
+  arr.splice(si<di?di-1:di,0,it);
   save();refreshAll();
 }
 function renderWall(){
@@ -1076,7 +1154,7 @@ function renderWall(){
     box.innerHTML='';
     if(!list.length){
       var eh=document.createElement('div');eh.className='note empty-hint';
-      eh.textContent='这面墙还空着 · 点 + 贴一张';
+      eh.innerHTML='<b>'+esc(bd.name)+'还空着</b><span>点右上角 + 贴第一张便签</span>';
       box.appendChild(eh);return;
     }
     list.forEach(function(n){
@@ -1273,40 +1351,42 @@ function renderPeriods(){
   });
 }
 function resetPeriods(){
-  if(!confirm('恢复默认节次？会回到 10 节，覆盖你现在设的每节课起止时间，第 11 节及之后排的课也会一起清掉。'))return;
-  var old=state.settings.periods.length;
-  state.settings.periods=defaultPeriods();
-  if(old>10){
-    Object.keys(state.timetable).forEach(function(k){
-      if((+k.split('-')[1])>10)delete state.timetable[k];
-    });
-  }
-  save();refreshAll();
+  askConfirm('恢复默认节次？会回到 10 节，覆盖你现在设的每节课起止时间，第 11 节及之后排的课也会一起清掉。',function(){
+    var old=state.settings.periods.length;
+    state.settings.periods=defaultPeriods();
+    if(old>10){
+      Object.keys(state.timetable).forEach(function(k){
+        if((+k.split('-')[1])>10)delete state.timetable[k];
+      });
+    }
+    save();refreshAll();
+  });
 }
 function addPeriod(){
   var ps=state.settings.periods;
-  if(ps.length>=16){alert('最多 16 节。再往后的安排建议直接写进右侧作息里。');return;}
+  if(ps.length>=16){toast('最多 16 节，再往后的安排建议直接写进右侧作息里。');return;}
   var last=ps[ps.length-1];
   var endMin=last?hhmmToMin(last.end):null;
   var st=(endMin!=null)?endMin+10:8*60;
-  if(st>=22*60){alert('新的一节会排到 22:00 之后，先把前一节的结束时间往前调一调。');return;}
+  if(st>=22*60){toast('新的一节会排到 22:00 之后，先把前一节的结束时间往前调一调。');return;}
   ps.push({n:ps.length+1,start:minToHHMM(st),end:minToHHMM(st+45)});
   save();refreshAll();
 }
 function removePeriod(){
   var ps=state.settings.periods;
-  if(ps.length<=1){alert('至少留一节。');return;}
+  if(ps.length<=1){toast('至少留一节。');return;}
   var n=ps[ps.length-1].n;
   var has=false;
   Object.keys(state.timetable).forEach(function(k){
     if(k.split('-')[1]===String(n)&&state.timetable[k])has=true;
   });
-  if(!confirm('删掉第 '+n+' 节？'+(has?'这一节上还排着课，会一起清掉。':'')))return;
-  ps.pop();
-  Object.keys(state.timetable).forEach(function(k){
-    if(k.split('-')[1]===String(n))delete state.timetable[k];
+  askConfirm('删掉第 '+n+' 节？'+(has?'这一节上还排着课，会一起清掉。':''),function(){
+    ps.pop();
+    Object.keys(state.timetable).forEach(function(k){
+      if(k.split('-')[1]===String(n))delete state.timetable[k];
+    });
+    save();refreshAll();
   });
-  save();refreshAll();
 }
 function renderCourseMgr(){
   var box=document.getElementById('courseMgr');box.innerHTML='';
@@ -1371,6 +1451,14 @@ function milestone(d){
 function renderCountdowns(){
   var box=document.getElementById('cds');if(!box)return;
   box.innerHTML='';
+  if(!state.settings.exams.length){
+    var g=document.createElement('span');g.className='cd-pill cd-hint';
+    g.textContent='点 + 添加考试';
+    g.title='先加一个考试节点，这里就会开始倒数';
+    g.onclick=openExams;
+    box.appendChild(g);
+    return;
+  }
   state.settings.exams.forEach(function(ex){
     var d=daysLeftTo(ex.date);
     var ms=milestone(d);
@@ -1395,7 +1483,6 @@ function renderExamList(){
     var del=document.createElement('button');del.className='ic';del.title='删除这个考试';
     del.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
     del.onclick=function(){
-      if(state.settings.exams.length<=1){alert('至少留一个考试节点');return;}
       state.settings.exams=state.settings.exams.filter(function(x){return x.id!==ex.id});
       save();renderExamList();renderCountdowns();
     };
@@ -1439,7 +1526,7 @@ function saveSettings(){
     key:document.getElementById('aiKey').value.trim(),
     model:document.getElementById('aiModel').value.trim()||'gpt-4o-mini'
   };
-  save();closeMask('mSettings');alert('已保存');
+  save();closeMask('mSettings');toast('已保存');
 }
 function toggleNotify(v){state.settings.notify=!!v;save();}
 function renderSnapshotList(){
@@ -1487,7 +1574,7 @@ function genReport(){
   var ai=state.settings.ai||{};
   var tx=document.getElementById('reportTx'),btn=document.getElementById('btnGen');
   if(!ai.baseUrl){
-    alert('先去「接口设置」填 Base URL。\n\n本地跑 Ollama 的话填：http://localhost:11435/v1\n线上服务一般也是 https://xxx/v1 这种结尾。');
+    toast('先去「接口设置」填 Base URL。本地 Ollama 填 http://localhost:11435/v1');
     openSettings();return;
   }
   var data=collectWeek();
@@ -1514,7 +1601,7 @@ function genReport(){
 function copyReport(){
   var tx=document.getElementById('reportTx');
   tx.select();
-  try{document.execCommand('copy');alert('已复制');}catch(e){alert('复制失败，手动选中复制吧');}
+  try{document.execCommand('copy');toast('已复制');}catch(e){toast('复制失败，手动选中复制吧');}
 }
 
 /* ---- 桌面能力：置顶 + 系统通知（仅 exe 生效） ---- */
@@ -1529,7 +1616,7 @@ function initDesktop(){
   }else if(b){b.style.display='none';}
 }
 function toggleTop(){
-  if(!window.desktop||!window.desktop.toggleTop){alert('置顶只在桌面 exe 里生效，浏览器版没有窗口可钉。');return;}
+  if(!window.desktop||!window.desktop.toggleTop){toast('置顶只在桌面 exe 里生效');return;}
   var b=document.getElementById('btnTop');
   window.desktop.toggleTop().then(function(on){
     if(b){b.textContent=on?'取消置顶':'置顶';b.className='btn'+(on?' primary':'');}
@@ -1584,7 +1671,7 @@ function openNew(board,courseId){
 }
 function addNote(){
   var t=document.getElementById('nTitle').value.trim();
-  if(!t){alert('便签不能是空的');return;}
+  if(!t){toast('便签不能是空的');return;}
   var b=document.getElementById('nBoard').value;
   var tones=['morning','day','night'];
   state.notes.push({
@@ -1620,14 +1707,16 @@ function restoreNote(id){
   }
 }
 function clearBox(){
-  if(!confirm('清空便签盒？里面的便签会彻底丢掉（不可恢复）。'))return;
-  state.notes=state.notes.filter(function(n){return !(n.done&&!n.stored)});
-  save();refreshAll();
+  askConfirm('清空便签盒？里面的便签会彻底丢掉（不可恢复）。',function(){
+    state.notes=state.notes.filter(function(n){return !(n.done&&!n.stored)});
+    save();refreshAll();
+  });
 }
 function clearArchive(){
-  if(!confirm('清空收纳箱？里面的便签会彻底丢掉（不可恢复）。'))return;
-  state.notes=state.notes.filter(function(n){return !(n.done&&n.stored)});
-  save();refreshAll();
+  askConfirm('清空收纳箱？里面的便签会彻底丢掉（不可恢复）。',function(){
+    state.notes=state.notes.filter(function(n){return !(n.done&&n.stored)});
+    save();refreshAll();
+  });
 }
 function storeNote(id){
   var n=state.notes.filter(function(x){return x.id===id})[0];
@@ -1638,9 +1727,10 @@ function storeNote(id){
 function foreverRemove(id){
   var n=state.notes.filter(function(x){return x.id===id})[0];
   if(!n)return;
-  if(!confirm('永久移除「'+n.title+'」？它不再每天回来，会直接进收纳箱。'))return;
-  n.daily=false;n.stored=true;n.storedAt=Date.now();
-  save();refreshAll();
+  askConfirm('永久移除「'+n.title+'」？它不再每天回来，会直接进收纳箱。',function(){
+    n.daily=false;n.stored=true;n.storedAt=Date.now();
+    save();refreshAll();
+  });
 }
 function openArchive(){openMask('mArchive')}
 function openTTEdit(){
@@ -1651,6 +1741,24 @@ function openTTEdit(){
 function closeTTPage(){document.getElementById('ttPage').classList.remove('on')}
 function openMask(id){document.getElementById(id).classList.add('on')}
 function closeMask(id){document.getElementById(id).classList.remove('on')}
+/* ---- 自绘确认框：iframe 预览里 confirm() 会被沙箱拦掉，统一走这里 ---- */
+var _cfCb=null;
+function askConfirm(msg,ok){
+  var m=document.getElementById('cfMsg');
+  if(m)m.textContent=msg;
+  _cfCb=ok;
+  openMask('mConfirm');
+}
+function cfYes(){closeMask('mConfirm');var f=_cfCb;_cfCb=null;if(f)f();}
+function cfNo(){closeMask('mConfirm');_cfCb=null;}
+function toast(msg){
+  var t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.className='toast';if(document.body&&document.body.appendChild)document.body.appendChild(t);}
+  if(!t)return;
+  t.textContent=msg;t.classList.add('on');
+  clearTimeout(t._tm);
+  t._tm=setTimeout(function(){t.classList.remove('on')},1800);
+}
 function openTT(){openMask('mTT')}
 function openBox(){openMask('mBox')}
 function exportJSON(){
@@ -1665,16 +1773,17 @@ function importJSON(inp){
     try{
       var d=JSON.parse(r.result);
       if(!d||!d.notes)throw 0;
-      if(!confirm('导入会覆盖当前全部数据，确定？'))return;
-      state=d;
-      if(!state.notes)state.notes=[];
-      if(!state.schedule)state.schedule=[];
-      if(!state.courses)state.courses=[];
-      if(!state.timetable)state.timetable={};
-      migrateSettings();
-      migrateNotes();
-      save();refreshAll();alert('导入成功');
-    }catch(e){alert('文件格式不对');}
+      askConfirm('导入会覆盖当前全部数据，确定？',function(){
+        state=d;
+        if(!state.notes)state.notes=[];
+        if(!state.schedule)state.schedule=[];
+        if(!state.courses)state.courses=[];
+        if(!state.timetable)state.timetable={};
+        migrateSettings();
+        migrateNotes();
+        save();refreshAll();toast('导入成功');
+      });
+    }catch(e){toast('文件格式不对');}
     inp.value='';
   };
   r.readAsText(f);
@@ -1697,10 +1806,11 @@ function importJSON(inp){
     var z=e.target.closest?e.target.closest('.zone'):null;
     if(!z||z.classList.contains('zone-add'))return;
     e.preventDefault();z.classList.remove('dragover');
-    var b=z.dataset.board;
+    var bid=e.dataTransfer.getData('text/x-board');
+    if(bid){moveBoard(bid,z.dataset.board);return;}
     var id=e.dataTransfer.getData('text/plain');
     var n=state.notes.filter(function(x){return x.id===id})[0];
-    if(n&&n.board!==b){n.board=b;save();refreshAll();}
+    if(n&&n.board!==z.dataset.board){n.board=z.dataset.board;save();refreshAll();}
   });
 })();
 
