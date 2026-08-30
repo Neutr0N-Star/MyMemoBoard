@@ -5,41 +5,169 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>知墙 · 下载页</title>
 <style>
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Roboto,sans-serif;background:#F2EFE6;color:#17171A;margin:0;padding:40px 20px;line-height:1.6}
-  .wrap{max-width:720px;margin:0 auto;background:#fff;border:2px solid #17171A;padding:28px;box-shadow:8px 8px 0 #17171A}
-  h1{font-size:22px;border-bottom:3px solid #17171A;padding-bottom:10px;margin-top:0}
-  h2{font-size:16px;margin-top:24px;border-left:6px solid #D0342C;padding-left:8px}
-  .btn{display:inline-block;background:#17171A;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #17171A;font-weight:700;margin:6px 4px 6px 0}
-  .btn:hover{background:#D0342C}
-  code{background:#F2EFE6;padding:2px 6px;border:1px solid #17171A}
-  pre{background:#F2EFE6;border:1.5px solid #17171A;padding:12px;overflow:auto;font-size:12px}
-  .foot{margin-top:24px;font-size:12px;opacity:.7}
+  :root{
+    --paper:#F2EFE6;
+    --ink:#17171A;
+    --red:#D0342C;
+    --white:#FFFFFF;
+    --blue:#3E5C76;
+    --grid:rgba(30,30,30,.08);
+    --fd:"Arial Black","Arial Bold","Impact","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Roboto,sans-serif;
+    background:var(--paper);color:var(--ink);line-height:1.6;font-size:15px;
+    padding:46px 20px calc(40px + env(safe-area-inset-bottom));min-height:100vh;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;
+    background-image:
+      repeating-linear-gradient(0deg,var(--grid) 0 1px,transparent 1px 22px),
+      repeating-linear-gradient(90deg,var(--grid) 0 1px,transparent 1px 22px);
+    background-size:22px 22px,22px 22px;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+    background:
+      radial-gradient(58vw 46vh at 78% -4%, rgba(62,92,118,.07), transparent 62%),
+      radial-gradient(42vw 40vh at 4% 96%, rgba(23,23,26,.05), transparent 60%);
+  }
+  .page{max-width:860px;margin:0 auto;position:relative}
+  .sheet{
+    background:var(--white);border:3px solid var(--ink);box-shadow:12px 12px 0 rgba(23,23,26,.22);
+    position:relative;padding:34px 38px 30px;
+  }
+  .sheet::before{
+    content:"";position:absolute;top:-3px;left:-3px;width:64px;height:11px;background:var(--red);z-index:2;
+  }
+  .corners{position:absolute;inset:10px;pointer-events:none;z-index:1;color:var(--ink)}
+  .corners i{position:absolute;width:16px;height:16px;opacity:.6}
+  .corners i:nth-child(1){top:0;left:0;border-top:2px solid var(--ink);border-left:2px solid var(--ink)}
+  .corners i:nth-child(2){top:0;right:0;border-top:2px solid var(--ink);border-right:2px solid var(--ink)}
+  .corners i:nth-child(3){bottom:0;left:0;border-bottom:2px solid var(--ink);border-left:2px solid var(--ink)}
+  .corners i:nth-child(4){bottom:0;right:0;border-bottom:2px solid var(--ink);border-right:2px solid var(--ink)}
+  .masthead{display:flex;align-items:center;gap:16px;border-bottom:3px solid var(--ink);padding-bottom:18px;margin-bottom:8px}
+  .masthead img{width:86px;height:86px;object-fit:contain;flex:none;border:2px solid var(--ink);background:var(--paper)}
+  .masthead .tt{min-width:0}
+  .masthead h1{font-size:26px;font-weight:900;font-family:var(--fd);letter-spacing:.02em;line-height:1.2}
+  .masthead .sub{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+  .masthead .sub em{font-style:normal;color:var(--red)}
+  .lead{margin:18px 0 6px;font-size:15.5px;font-weight:500}
+  h2{
+    font-size:15px;font-weight:900;font-family:var(--fd);letter-spacing:.08em;text-transform:uppercase;
+    margin:30px 0 14px;display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:2px solid var(--ink);
+  }
+  h2::before{content:"";width:11px;height:11px;background:var(--red);flex:none}
+  h3{font-size:13px;font-weight:900;margin:14px 0 6px;letter-spacing:.03em}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:6px}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 18px;
+    border:2px solid var(--ink);background:var(--ink);color:#fff;text-decoration:none;
+    font-weight:900;font-size:14px;letter-spacing:.02em;transition:box-shadow .1s,transform .1s,background .1s;
+  }
+  .btn:hover{box-shadow:inset 0 -4px 0 var(--red);background:var(--ink)}
+  .btn:active{transform:translate(1px,1px)}
+  .btn.alt{background:var(--white);color:var(--ink)}
+  .btn.alt:hover{box-shadow:inset 0 -4px 0 var(--ink)}
+  .btn .arrow{font-size:18px;line-height:1}
+  .meta-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+  .meta-box{border:2px solid var(--ink);background:var(--paper);padding:14px 16px;position:relative}
+  .meta-box::before{content:"";position:absolute;top:-2px;left:-2px;width:38px;height:7px;background:var(--red)}
+  .meta-box h3{border-bottom:2px solid var(--ink);padding-bottom:6px;margin-top:0;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  .meta-box h3::before{content:"";width:9px;height:9px;background:var(--ink);flex:none}
+  .meta-box p{font-size:13px}
+  .meta-box code{background:#fff;border:1px solid var(--ink);padding:1px 5px;font-size:12px}
+  .features{display:grid;grid-template-columns:1fr 1fr;gap:10px;list-style:none}
+  .features li{
+    border:1.5px solid var(--ink);background:#fff;padding:10px 12px;font-size:13px;font-weight:700;
+    display:flex;gap:8px;align-items:flex-start;box-shadow:3px 3px 0 rgba(23,23,26,.12);
+  }
+  .features li::before{content:"▸";color:var(--red);font-weight:900;flex:none}
+  pre{
+    background:var(--paper);border:1.5px solid var(--ink);padding:12px 14px;overflow:auto;
+    font-size:12.5px;line-height:1.5;position:relative;
+  }
+  pre::before{content:"";position:absolute;top:0;left:0;width:34px;height:5px;background:var(--red)}
+  .warn{border:1.5px solid var(--red);background:rgba(208,52,44,.06);padding:10px 12px;font-size:12.5px;font-weight:700;margin-top:10px}
+  .warn b{color:var(--red)}
+  footer{margin-top:26px;padding-top:14px;border-top:2px solid var(--ink);text-align:center;font-size:12px;font-weight:700;letter-spacing:.06em}
+  footer .red{color:var(--red)}
+  @media (max-width:620px){
+    .sheet{padding:22px 18px 20px}
+    .meta-cols{grid-template-columns:1fr}
+    .features{grid-template-columns:1fr}
+    .masthead img{width:64px;height:64px}
+    .masthead h1{font-size:20px}
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>知墙 · 学习工作台</h1>
-  <p>考研 / 学期 / 待办 / 生活四区便签墙，构成主义·工程设计流视觉，数据全本地。</p>
+<div class="page">
+  <div class="sheet">
+    <div class="corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
-  <h2>下载</h2>
-  <a class="btn" href="https://github.com/Neutr0N_Star/xingzhijian/releases/latest">进入 GitHub Releases</a>
+    <div class="masthead">
+      <img src="../assets/logo.png" alt="晷刻工作室">
+      <div class="tt">
+        <h1>知墙</h1>
+        <div class="sub">学习工作台 · <em>Constructivism</em> · v1.0.0</div>
+      </div>
+    </div>
 
-  <h3>Windows 便携版</h3>
-  <p>下载 <code>My-Memo-Boards-1.0.0-portable.exe</code>，双击即开。数据生成在 exe 同目录 <code>data/</code>。</p>
+    <p class="lead">考研 / 学期 / 待办 / 生活四面便签墙 + 作息侧栏 + 课程表。数据全本地，双击即用。</p>
 
-  <h3>Windows 安装版</h3>
-  <p>下载 <code>My-Memo-Boards-1.0.0-setup.exe</code>，安装后可从开始菜单/桌面快捷方式打开。</p>
+    <h2>下载</h2>
+    <div class="btns">
+      <a class="btn" href="https://github.com/Neutr0N_Star/zhiqiang/releases/latest">
+        <span>进入 GitHub Releases</span><span class="arrow">↓</span>
+      </a>
+      <a class="btn alt" href="https://github.com/Neutr0N_Star/zhiqiang">
+        <span>源码仓库</span><span class="arrow">→</span>
+      </a>
+    </div>
 
-  <h2>SHA256 校验</h2>
-  <p>下载后建议校验，防止文件被篡改：</p>
-  <pre>Get-FileHash -Algorithm SHA256 .\My-Memo-Boards-1.0.0-portable.exe</pre>
-  <p>与发布页 <code>SHA256SUMS.txt</code> 对比一致后再运行。</p>
+    <div class="meta-cols">
+      <div class="meta-box">
+        <h3>Windows 便携版</h3>
+        <p>下载 <code>知墙-1.0.0-portable.exe</code>，双击即开。数据生成在 exe 同目录 <code>data/</code>。</p>
+      </div>
+      <div class="meta-box">
+        <h3>Windows 安装版</h3>
+        <p>下载 <code>知墙-1.0.0-setup.exe</code>，安装后开始菜单 / 桌面快捷方式名为「知墙」。</p>
+      </div>
+    </div>
 
-  <h2>安全提示</h2>
-  <p>当前 exe 未做代码签名，Windows SmartScreen 可能提示「Windows 已保护你的电脑」。选择「更多信息 → 仍要运行」即可。</p>
-  <p>数据仅存本机；AI 周报只在主动配置接口时发送。</p>
+    <h2>功能亮点</h2>
+    <ul class="features">
+      <li>四面便签墙：考研 / 学期 / 待办 / 生活</li>
+      <li>作息侧栏 + 现有指针 + 明天预览</li>
+      <li>课程表完整编辑：节次可增减、起止可改</li>
+      <li>考试倒计时：多节点、里程碑变色</li>
+      <li>便签盒 / 收纳箱：撕下、粘回、永久移除</li>
+      <li>每日任务：撕掉后第二天自动贴回</li>
+      <li>AI 周报：支持本地 Ollama，Key 可脱敏导出</li>
+      <li>桌面版：置顶 / 系统通知 / 自启 / 自动更新</li>
+    </ul>
 
-  <div class="foot">MIT License · Neutr0N_Star（晓星）· 晷刻工作室</div>
+    <h2>SHA256 校验</h2>
+    <pre>Get-FileHash -Algorithm SHA256 .\知墙-1.0.0-portable.exe</pre>
+    <p style="font-size:12.5px;font-weight:700">将输出与发布页 <code>SHA256SUMS.txt</code> 对比，一致后再运行。</p>
+    <div class="warn"><b>提示：</b>当前 exe 未做代码签名，Windows SmartScreen 可能提示「Windows 已保护你的电脑」。选择「更多信息 → 仍要运行」即可。</div>
+
+    <h2>数据与隐私</h2>
+    <ul class="features">
+      <li>便签、作息、课程、设置只存本机</li>
+      <li>浏览器版用 localStorage，桌面版存 exe 同目录 <code>data/</code></li>
+      <li>AI 周报只在主动配置接口时发送到你自己填的 Base URL</li>
+      <li>导出 JSON 会脱敏 API Key，桌面版用系统 safeStorage 加密</li>
+    </ul>
+
+    <footer>
+      MIT License · Neutr0N_Star（晓星）· <span class="red">晷刻工作室</span>
+    </footer>
+  </div>
 </div>
 </body>
 </html>

@@ -1,4 +1,4 @@
-// 知墙 · My-Memo-Boards — Electron 主进程
+// 知墙 · 学习工作台 — Electron 主进程
 // 职责边界：只做「窗口外壳 + 数据落盘位置 + 单实例锁」三件事。
 // 业务逻辑全在 index.html（纯前端 + localStorage），主进程不介入。
 
@@ -139,7 +139,7 @@ function createWindow() {
     minWidth: 1080,
     minHeight: 700,
     // 与 index.html 的 <title> 保持一致，避免加载完成瞬间标题跳变
-    title: '知墙 · My-Memo-Boards',
+    title: '知墙 · 学习工作台',
     backgroundColor: '#F2EFE6', // 与界面底稿纸同色，启动瞬间不闪白
     icon: path.join(__dirname, 'assets', 'icon.ico'),
     frame: winMode !== 'frameless', // 无边框模式在创建时生效（重启后切换）

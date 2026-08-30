@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' http: https:; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>知墙 · My-Memo-Boards</title>
+<title>知墙 · 学习工作台</title>
 <style>
 /* ========== tokens · 构成主义 / 工程设计流 ========== */
 :root{
@@ -170,7 +170,7 @@ header::before{content:"";position:absolute;top:-2px;left:94px;width:40px;height
 .note.tone-night::before{background:var(--ink)}
 .note::after{content:"";position:absolute;top:26px;left:13px;width:1.5px;height:60px;background:var(--tick);opacity:.32;z-index:1}
 .note:hover{box-shadow:0 8px 18px -8px rgba(0,0,0,.4);z-index:2}
-.note .tx{font-size:13.5px;line-height:1.5;word-break:break-word;cursor:text;flex:1;overflow:hidden;padding:30px 12px 8px}
+.note .tx{font-family:inherit;font-size:13.5px;line-height:1.45;word-break:break-word;cursor:text;flex:1;overflow:hidden;padding:30px 12px 8px;display:flex;align-items:center;justify-content:center;text-align:center}
 .note .meta{font-size:10.5px;color:var(--ink);display:flex;gap:8px;flex-wrap:wrap;font-weight:700;padding:6px 12px 8px;border-top:2px solid var(--ink)}
 .note .meta .over{background:var(--red);color:#fff;padding:0 5px;font-weight:900;letter-spacing:.02em}
 .note .meta .dl{background:var(--blue);color:#fff;padding:0 5px;font-weight:900;letter-spacing:.02em}
@@ -404,7 +404,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 
 <!-- 无边框窗口的自绘标题栏 -->
 <div id="fbar">
-  <span class="ft">知墙 · My-Memo-Boards</span>
+  <span class="ft">知墙 · 学习工作台</span>
   <div class="fx">
     <button onclick="winAct('minimize')" title="最小化">—</button>
     <button onclick="winAct('maximize')" title="最大化/还原">□</button>
@@ -666,7 +666,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
       <p><b>作者</b>：Neutr0N_Star（晓星）</p>
       <p><b>工作室</b>：晷刻（Sext）通用实用软件工作室</p>
       <p><b>许可</b>：MIT License</p>
-      <p>知墙 · My-Memo-Boards（便签墙）——考研 / 学期 / 待办 / 生活四区便签墙，构成主义·工程设计流视觉。</p>
+      <p>知墙 · 学习工作台（便签墙）——考研 / 学期 / 待办 / 生活四区便签墙，构成主义·工程设计流视觉。</p>
       <p style="font-size:11px;opacity:.65">数据仅存本机；AI 周报仅在主动配置接口后发送。日志与版本更新见仓库。</p>
     </div>
     <div class="foot"><button class="btn primary" onclick="closeMask('mAbout')">关闭</button></div>
@@ -2080,7 +2080,7 @@ function exportJSON(){
   out.schemaVersion=1;
   var blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='便签墙-'+todayISO()+'.json';a.click();
+  a.download='知墙-'+todayISO()+'.json';a.click();
 }
 function importJSON(inp){
   var f=inp.files[0];if(!f)return;

@@ -7,14 +7,16 @@
 
 | 平台 | 文件 | 说明 |
 |---|---|---|
-| Windows | `My-Memo-Boards-1.0.0-portable.exe` | 单文件便携版，数据生成在 exe 同目录 `data/` |
-| Windows | `My-Memo-Boards-1.0.0-setup.exe` | NSIS 安装版（开始菜单/快捷方式/卸载） |
+| Windows | `知墙-1.0.0-portable.exe` | 单文件便携版，数据生成在 exe 同目录 `data/` |
+| Windows | `知墙-1.0.0-setup.exe` | NSIS 安装版（开始菜单/桌面快捷方式名：知墙） |
 
 **SHA256 校验**
 
+> ⚠️ 若重新执行 `npm run dist` 生成了新命名的构建产物，请用 `Get-FileHash` 重新填写下方哈希；旧 1.0.0 包（`My-Memo-Boards-1.0.0-*`）的哈希见 `release/SHA256SUMS.txt`。
+
 ```
-SHA256 (My-Memo-Boards-1.0.0-portable.exe) = d8453c278367ed7899f750ec385b63faaf07523f053fa12715f4550c3fe4c1ee
-SHA256 (My-Memo-Boards-1.0.0-setup.exe) = 55bff077004c6f3a5e8f410ebf2a22e25bc5f2a30faedad02884152661f0da3a
+SHA256 (知墙-1.0.0-portable.exe) = <重新打包后填写>
+SHA256 (知墙-1.0.0-setup.exe) = <重新打包后填写>
 ```
 
 ## 功能亮点
