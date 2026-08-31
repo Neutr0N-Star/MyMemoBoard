@@ -25,6 +25,7 @@
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win",
+    "dist:ci": "electron-builder --win --publish never",
     "dist:store": "electron-builder --win appx",
     "dir": "electron-builder --dir"
   },

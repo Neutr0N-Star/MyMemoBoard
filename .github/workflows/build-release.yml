@@ -23,7 +23,11 @@ jobs:
         run: npm ci
 
       - name: Build Windows artifacts
-        run: npm run dist
+        # 用 dist:ci（= electron-builder --win --publish never）：
+        # build.publish 块要保留（它打进 app-update.yml，App 内自动更新靠它），
+        # 但 electron-builder 默认 onTagOrDraft，在 tag 上会自动发布并索要 GH_TOKEN；
+        # 这里禁止它发布，改由下面的 softprops 统一出 Release。
+        run: npm run dist:ci
         env:
           NODE_OPTIONS: ''
 
