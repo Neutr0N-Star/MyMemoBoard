@@ -279,11 +279,11 @@ ipcMain.handle('get-update-status', function(){
   return { status: updateStatus };
 });
 
-// 1.0.3：检查到新版后由渲染进程请求打开浏览器下载页（仅放行 GitHub 仓库链接，防止被滥用跳转任意网站）
+// 1.0.3：检查到新版后由渲染进程请求打开浏览器下载页（仅放行本仓库与发布页，防止被滥用跳转任意网站）
 ipcMain.handle('open-external', async function(_e, url){
   try{
     const u = String(url || '');
-    const allow = /^https:\/\/github\.com\/Neutr0N-Star\/MyMemoBoard\//;
+    const allow = /^https:\/\/(github\.com\/Neutr0N-Star\/MyMemoBoard\/|neutr0n-star\.github\.io\/MyMemoBoard\/)/;
     if(!allow.test(u)) return { ok:false, message:'链接不在允许范围' };
     await shell.openExternal(u);
     return { ok:true };

@@ -1830,7 +1830,7 @@ function checkUpdate(){
       // 1.0.3 起不再后台下载（github.com 可能被拦导致无声挂起），改为浏览器打开下载页
       toast('检测到新版本 v'+(r.version||'')+'，正在打开下载页…');
       if(window.desktop.openExternal){
-        window.desktop.openExternal('https://github.com/Neutr0N-Star/MyMemoBoard/releases/latest')
+        window.desktop.openExternal('https://neutr0n-star.github.io/MyMemoBoard/')
           .then(function(res){
             if(!res||!res.ok)toast('打开下载页失败，请手动访问 GitHub Releases');
           })
