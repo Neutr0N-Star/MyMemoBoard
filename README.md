@@ -5,8 +5,7 @@
 ## 下载与安装
 
 - 系统要求：Windows 10 / 11
-- 安装版：`MyMemoBoards-1.0.0-setup.exe`，装完在开始菜单和桌面生成「知墙」快捷方式
-- 便携版：`MyMemoBoards-1.0.0-portable.exe`，双击即用，数据放在 exe 同目录 `data/`，拷贝整个文件夹就能迁移
+- 安装版：`MyMemoBoards-1.0.0-setup.exe`，装完在开始菜单和桌面生成「知墙」快捷方式——**正式发布只提供这个安装包**
 
 > 目前 exe 没有代码签名，Windows SmartScreen 可能提示「未知发布者」。这是本地/小规模分发的正常现象，不是病毒；点「更多信息 → 仍要运行」即可。
 
@@ -46,7 +45,8 @@ SHA256 值放在 `release/SHA256SUMS.txt`，GitHub Release 附件里也会带上
 ```bash
 npm install
 npm start            # 本地运行，开发模式数据在 data-dev/
-npm run dist         # 打包 Windows 安装版 + 便携版
+npm run dist         # 打包 Windows 安装版 + 便携版（便携版仅供内测，不随正式发布提供）
+npm run dist:ci      # CI 专用：同上但禁止 electron-builder 自动发布（--publish never）
 npm run dist:store   # 商店版（Windows AppX）
 ```
 
