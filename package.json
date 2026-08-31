@@ -1,6 +1,6 @@
 {
   "name": "mymemoboards",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "知墙 · 个人事务工作台——可自定义便签墙 + 作息侧栏 + 课程表浮窗 + 便签盒（构成主义视觉）",
   "main": "main.js",
   "author": "Neutr0N_Star",

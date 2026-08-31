@@ -347,7 +347,7 @@ footer{margin-top:14px;text-align:center;font-size:calc(var(--fs-ui)*0.7);color:
 .note .pin{position:absolute;top:6px;left:31px;font-size:9px;font-weight:900;background:var(--red);color:#fff;padding:1px 4px;letter-spacing:.04em;z-index:3}
 
 /* ===== 课程表完整编辑页 ===== */
-.ttpage{position:fixed;inset:0;z-index:120;background:var(--paper);display:none;flex-direction:column}
+.ttpage{position:fixed;inset:0;z-index:151;background:var(--paper);display:none;flex-direction:column}
 .ttpage.on{display:flex}
 .ttpage .bar{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:3px solid var(--ink);background:var(--white);flex-wrap:wrap}
 .ttpage .bar h3{font-size:15px;font-weight:900;font-family:var(--fd);letter-spacing:.06em;display:flex;align-items:center;gap:8px}
@@ -703,7 +703,7 @@ footer{margin-top:14px;text-align:center;font-size:calc(var(--fs-ui)*0.7);color:
   <div class="modal" style="max-width:420px">
     <h3>关于知墙<button class="x" onclick="closeMask('mAbout')">×</button></h3>
     <div class="field" style="font-size:calc(var(--fs-ui)*0.867);line-height:1.8">
-      <p><b>版本</b>：1.2.0</p>
+      <p><b>版本</b>：1.2.1</p>
       <p><b>作者</b>：Neutr0N_Star（晓星）</p>
       <p><b>工作室</b>：晷刻（Sext）通用实用软件工作室</p>
       <p><b>许可</b>：MIT License</p>
@@ -1174,7 +1174,7 @@ function renderCourses(){
   if(!state.courses.length){
     var h=document.createElement('div');h.className='empty';
     h.style.cssText='grid-column:auto;text-align:left;padding:12px 10px;font-size:calc(var(--fs-ui)*0.8);line-height:1.7';
-    h.innerHTML='<b>还没有课程</b><br>顶栏「课程表」→「完整编辑」→ 课程清单 + 加课程';
+    h.innerHTML='<b>还没有课程</b><br>左侧日程表下方「课程表」→「完整编辑」→ 课程清单 + 加课程';
     box.appendChild(h);
     return;
   }
