@@ -5,14 +5,14 @@
 ## 下载与安装
 
 - 系统要求：Windows 10 / 11
-- 安装版：`MyMemoBoards-1.0.4-setup.exe`，装完在开始菜单和桌面生成「知墙」快捷方式——**正式发布只提供这个安装包**
+- 安装版：`MyMemoBoards-1.1.0-setup.exe`，装完在开始菜单和桌面生成「知墙」快捷方式——**正式发布只提供这个安装包**
 
 > 目前 exe 没有代码签名，Windows SmartScreen 可能提示「未知发布者」。这是本地/小规模分发的正常现象，不是病毒；点「更多信息 → 仍要运行」即可。
 
 下载后可以核对一下文件：
 
 ```powershell
-Get-FileHash -Algorithm SHA256 .\MyMemoBoards-1.0.4-setup.exe
+Get-FileHash -Algorithm SHA256 .\MyMemoBoards-1.1.0-setup.exe
 ```
 
 SHA256 值放在 `release/SHA256SUMS.txt`，GitHub Release 附件里也会带上。
@@ -25,7 +25,7 @@ SHA256 值放在 `release/SHA256SUMS.txt`，GitHub Release 附件里也会带上
 - **便签盒与收纳箱**：撕下的便签进便签盒，满一周自动入收纳箱；便签盒里的可以粘回墙上，也可以彻底丢掉。
 - **每日任务**：一类特殊便签，撕掉后第二天自动贴回墙上，不会进收纳箱。
 - **AI 周报**：可选功能。自己填 Base URL、Key、模型名，支持本地 Ollama；Key 用系统 safeStorage 加密保存，导出 JSON 时自动脱敏。
-- **数据**：默认全本机，桌面版存在 exe 同目录 `data/state.json`；支持导出/导入 JSON、CSV、Markdown，每天自动存快照。
+- **数据**：默认全本机，桌面版存在用户数据目录 `%APPDATA%\MyMemoBoards\state.json`（与程序安装位置隔离，更新不碰数据）；支持导出/导入 JSON、CSV、Markdown，每天自动存快照。
 
 ## 数据与隐私
 

@@ -62,20 +62,18 @@ if (process.platform === 'win32') {
 }
 
 // ---------------------------------------------------------------------------
-// 1. 数据目录绿色化：随程序走，不污染 C 盘 AppData
-//    - portable 单文件 exe → exe 同目录 data/
-//    - 打包目录版         → exe 同目录 data/
-//    - 开发模式(npm start) → 项目内 data-dev/
-//    好处：整个文件夹拷到 U 盘带走，数据跟着走；卸载不留残余。
+// 1. 数据目录：标准 %APPDATA%\MyMemoBoards（v1.1.0 起）
+//    v1.0.x 是「绿色化」设计（数据存 exe 同目录 data/），但自动更新会替换
+//    exe 所在目录 → 更新后数据丢失（严重 bug）。
+//    现改回常规桌面软件做法：数据放用户 AppData，程序更新与数据隔离。
+//    开发模式(npm start) 仍用项目内 data-dev/，避免污染真实数据。
 // ---------------------------------------------------------------------------
 (function setupUserData() {
   let base;
-  if (process.env.PORTABLE_EXECUTABLE_DIR) {
-    base = path.join(process.env.PORTABLE_EXECUTABLE_DIR, 'data');
-  } else if (app.isPackaged) {
-    base = path.join(path.dirname(process.execPath), 'data');
-  } else {
+  if (!app.isPackaged) {
     base = path.join(__dirname, 'data-dev');
+  } else {
+    base = path.join(app.getPath('appData'), 'MyMemoBoards');
   }
   app.setPath('userData', base);
 })();
