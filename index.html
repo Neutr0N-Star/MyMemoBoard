@@ -292,12 +292,18 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
 .tl-legend span{display:inline-flex;align-items:center}
 .tl-legend i{display:inline-block;width:15px;height:5px;margin-right:4px;flex:none}
 
-/* ===== 课程筛选芯片 ===== */
+/* ===== 分区墙子芯片 / 课程筛选芯片 ===== */
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
 .chip{min-height:26px;padding:0 9px;border:2px solid var(--ink);background:var(--white);color:var(--ink);font-size:11px;font-weight:900;display:inline-flex;align-items:center;letter-spacing:.02em}
 .chip.on{background:var(--ink);color:#fff}
 .chip:active{transform:translate(1px,1px)}
 .chip .n{font-size:9.5px;opacity:.65;margin-left:4px;font-variant-numeric:tabular-nums}
+.chip .chip-del{margin-left:7px;border:0;border-left:1px solid currentColor;background:none;color:inherit;font-size:12px;font-weight:900;line-height:1;padding:0 0 0 6px;cursor:pointer}
+.chip .chip-del:hover{color:var(--red)}
+.partition-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:-2px 0 9px}
+.partition-tools .chip-add{min-height:26px;padding:0 8px;border:1.5px dashed var(--ink);background:var(--paper);color:var(--ink);font-size:11px;font-weight:900;cursor:pointer}
+.partition-tools .chip-add:hover{background:var(--ink);color:#fff}
+.chip-rename{width:92px;min-height:24px;padding:2px 5px;border:1.5px solid var(--red);border-radius:0;background:#fff;color:var(--ink);font-size:11px;font-weight:900}
 
 /* ===== 左下角卡片：统计 + 纸堆便签盒 + 收纳箱抽屉 ===== */
 .sidecard{background:var(--white);border:2px solid var(--ink);padding:12px 14px;margin-top:12px;position:relative}
@@ -439,7 +445,6 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
   <button class="cd-add" onclick="openExams()" title="管理考试节点">+</button>
   <div class="acts">
     <button class="btn primary" onclick="openNew()"><svg class="zh-ico" width="15" height="15"><use href="#arrR"/></svg>写便签</button>
-    <button class="btn" onclick="openTTEdit()"><svg class="zh-ico" width="15" height="15"><use href="#arrR"/></svg>课程表</button>
     <button class="btn" onclick="exportJSON()"><svg class="zh-ico" width="15" height="15"><use href="#arrR"/></svg>导出</button>
     <button class="btn" onclick="document.getElementById('impFile').click()"><svg class="zh-ico" width="15" height="15"><use href="#arrR"/></svg>导入</button>
     <input type="file" id="impFile" accept="application/json" style="display:none" onchange="importJSON(this)">
@@ -468,6 +473,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
       <span><i style="background:rgba(30,30,30,.18)"></i>空档</span>
     </div>
     <div class="hint">左 = 课表课程 · 右 = 我的作息 · 点右侧方块改 · 点 + 自己填时间加一段</div>
+    <button class="btn" style="width:100%;margin-top:9px" onclick="openTT()"><svg class="zh-ico" width="15" height="15"><use href="#arrR"/></svg>课程表</button>
   </aside>
 
   <div class="sidecard" id="sideCard">
@@ -505,15 +511,26 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
   <button data-v="box"><svg class="zh-ico" width="15" height="15"><use href="#arrR"/></svg>便签盒</button>
 </nav>
 
+<!-- 新增墙浮窗 -->
+<div class="mask" id="mBoardAdd">
+  <div class="modal" style="max-width:430px">
+    <h3>加一面墙<button class="x" onclick="closeMask('mBoardAdd')">×</button></h3>
+    <div class="field"><label>墙名</label><input type="text" id="newBoardName" maxlength="20" placeholder="例：项目推进"></div>
+    <div class="field"><label>墙类型</label><select id="newBoardType"><option value="white">白板墙 · 直接贴便签</option><option value="partition">分区墙 · 可加子分区芯片</option></select></div>
+    <div class="foot"><button class="btn" onclick="closeMask('mBoardAdd')">取消</button><button class="btn primary" onclick="confirmAddBoard()">创建</button></div>
+  </div>
+</div>
+
 <!-- 写便签浮窗 -->
 <div class="mask" id="mNew">
   <div class="modal">
     <h3><span id="mNewTitle">写一张便签</span><button class="x" onclick="closeMask('mNew')">×</button></h3>
     <div class="field"><label>写点什么</label><textarea id="nTitle" rows="2" placeholder="例：英语真题精讲一套（2019 阅读）"></textarea></div>
     <div class="row2">
-      <div class="field"><label>贴到哪面墙</label><select id="nBoard"><option value="kaoyan">考研备考</option><option value="course">学期科目</option><option value="todo">待办</option><option value="life">生活事项</option></select></div>
-      <div class="field"><label>关联课程（可选）</label><select id="nCourse"></select></div>
+      <div class="field"><label>贴到哪面墙</label><select id="nBoard" onchange="renderNoteChildOptions()"></select></div>
+      <div class="field"><label>子分区（可选）</label><select id="nChild"></select></div>
     </div>
+    <div class="field"><label>关联课程（可选）</label><select id="nCourse"></select></div>
     <div class="row2">
       <div class="field"><label>截止日期（可选）</label><input type="date" id="nDue"></div>
       <div class="field"><label>时间（可选）</label><input type="time" id="nTime"></div>
@@ -651,8 +668,9 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
     <h3>帮助<button class="x" onclick="closeMask('mHelp')">×</button></h3>
     <div class="field" style="font-size:13px;line-height:1.8">
       <p><b>贴</b>：点墙上的 <b>+</b> 写便签；<b>撕下</b> = 完成归档进便签盒；<b>粘回</b> = 恢复；<b>入箱</b> = 长期归档。</p>
-      <p><b>墙面</b>：墙标题右侧 <b>×</b> 可删（点两下确认），双击墙名可改名，墙头 <b>≡</b> 可拖动换位，<b>默认</b> 按钮设默认墙。</p>
-      <p><b>课程表</b>：顶栏「课程表」进完整编辑；节次时间可增减，点格子选课程；侧栏时间轴会实时反映撞车段。</p>
+      <p><b>墙面</b>：墙标题右侧 <b>×</b> 可删（点两下确认），双击墙名可改名，墙头 <b>≡</b> 可拖动换位，<b>默认</b> 按钮设默认墙；末尾「+ 加一块墙」可选择白板墙或分区墙。</p>
+      <p><b>分区墙</b>：墙名下面的子芯片可筛选便签，双击芯片改名，点「+ 子分区」继续添加。</p>
+      <p><b>课程表</b>：在左侧日程表下方打开；节次时间可增减，点格子选课程；时间轴会实时反映撞车段。</p>
       <p><b>考试倒计时</b>：顶栏考试 pill 可改名字与日期，超宽自动换行。</p>
       <p><b>每日任务</b>：撕掉后第二天自动贴回；不想每天回来用便签盒「永久移除」。</p>
       <p><b>AI 周报</b>：设置里填 Base URL / Key / 模型，点「生成」；本地 Ollama 走 http://localhost:11435/v1。</p>
@@ -665,7 +683,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
   <div class="modal" style="max-width:420px">
     <h3>关于知墙<button class="x" onclick="closeMask('mAbout')">×</button></h3>
     <div class="field" style="font-size:13px;line-height:1.8">
-      <p><b>版本</b>：1.0.1</p>
+      <p><b>版本</b>：1.0.2</p>
       <p><b>作者</b>：Neutr0N_Star（晓星）</p>
       <p><b>工作室</b>：晷刻（Sext）通用实用软件工作室</p>
       <p><b>许可</b>：MIT License</p>
@@ -767,12 +785,30 @@ function defaultPeriods(){
   return arr;
 }
 function defaultBoards(){
-  return [{id:'kaoyan',name:'考研备考'},{id:'course',name:'学期科目'},{id:'todo',name:'待办'},{id:'life',name:'生活事项'}];
+  return [{id:'kaoyan',name:'备考',type:'white'},{id:'course',name:'学期科目',type:'partition',children:[]},{id:'todo',name:'待办',type:'white'},{id:'life',name:'生活事项',type:'white'}];
+}
+function normalizeBoard(b){
+  if(!b.id)b.id='w'+uid().slice(0,6);
+  if(!b.name)b.name=b.id;
+  if(!b.type)b.type=b.id==='course'?'partition':'white';
+  if(b.type==='partition'&&!Array.isArray(b.children))b.children=[];
+  if(b.type==='partition'&&!b.children.length)b.children=[{id:'c'+uid().slice(0,6),name:'未分类'}];
+  if(b.type!=='partition')delete b.children;
+  return b;
 }
 function boards(){
   if(!state.settings)state.settings={};
   if(!state.settings.boards||!state.settings.boards.length)state.settings.boards=defaultBoards();
+  state.settings.boards.forEach(normalizeBoard);
   return state.settings.boards;
+}
+function boardById(id){return boards().filter(function(b){return b.id===id})[0]||null;}
+function isPartitionBoard(id){var b=boardById(id);return !!(b&&b.type==='partition');}
+function partitionItems(bd){return Array.isArray(bd&&bd.children)?bd.children:[];}
+function childName(boardId,childId){
+  var bd=boardById(boardId),items=partitionItems(bd);
+  for(var i=0;i<items.length;i++)if(items[i].id===childId)return items[i].name;
+  return childId||'';
 }
 function todayDayKey(){
   var w=new Date().getDay();
@@ -818,8 +854,14 @@ function migrateSettings(){
   if(!state.settings.font.mode)state.settings.font.mode='default';
   if(!state.settings.font.custom)state.settings.font.custom='';
   if(!state.settings.snapshots)state.settings.snapshots=[];
+  if(!state.settings.childFilters)state.settings.childFilters={};
   if(!state.settings.boards||!state.settings.boards.length)state.settings.boards=defaultBoards();
-  state.settings.boards.forEach(function(b){if(!b.id)b.id='w'+uid().slice(0,6);if(!b.name)b.name=b.id;});
+  state.settings.boards.forEach(function(b){
+    normalizeBoard(b);
+    if(b.id==='kaoyan'&&b.name==='考研备考')b.name='备考';
+  });
+  // 旧版把课程墙写死为 course，新版只把它迁移为普通分区墙，课程表本身仍是独立数据。
+  state.notes.forEach(function(n){if(n.childId===undefined)n.childId='';});
   if(!state.settings.defaultBoard)state.settings.defaultBoard='todo';
   var dbOk=false;
   state.settings.boards.forEach(function(b){if(b.id===state.settings.defaultBoard)dbOk=true;});
@@ -1159,66 +1201,49 @@ function renderZones(){
   boards().forEach(function(bd){
     var b=bd.id;
     var sec=document.createElement('section');
-    sec.className='zone';sec.dataset.board=b;sec.id='zone-'+b;
+    sec.className='zone'+(bd.type==='partition'?' partition-zone':'');sec.dataset.board=b;sec.id='zone-'+b;
     var zh=document.createElement('div');zh.className='zh';
     // 拖拽手柄：拖它换墙的位置（与便签拖放互不干扰）
     var grip=document.createElement('button');grip.className='zgrip';grip.title='拖我换墙的位置';
     grip.draggable=true;
     grip.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h8M8 12h8M8 18h8"/></svg>';
-    grip.addEventListener('dragstart',function(e){
-      e.dataTransfer.setData('text/x-board',b);
-      e.dataTransfer.effectAllowed='move';
-      grip.classList.add('dragging');
-    });
+    grip.addEventListener('dragstart',function(e){e.dataTransfer.setData('text/x-board',b);e.dataTransfer.effectAllowed='move';grip.classList.add('dragging');});
     grip.addEventListener('dragend',function(){grip.classList.remove('dragging');});
     zh.appendChild(grip);
-    var ico=document.createElement('svg');ico.className='zh-ico';
-    ico.setAttribute('width','15');ico.setAttribute('height','15');
-    ico.innerHTML='<use href="#arrR"/>';
-    zh.appendChild(ico);
-    var nm=document.createElement('span');nm.className='bname';nm.textContent=bd.name;
-    nm.title='双击改墙名';
-    nm.ondblclick=function(){renameBoard(b,nm);};
-    zh.appendChild(nm);
-    var cnt=document.createElement('span');cnt.className='cnt';cnt.id='cnt-'+b;
-    zh.appendChild(cnt);
-    if(b==='course'){
-      var tt=document.createElement('button');tt.className='tt';tt.title='课程表';
-      tt.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 5h16v14H4z"/><path d="M4 9h16M9 5v14"/></svg>';
-      tt.onclick=function(){openTT();};
-      zh.appendChild(tt);
-    }
+    var ico=document.createElement('svg');ico.className='zh-ico';ico.setAttribute('width','15');ico.setAttribute('height','15');ico.innerHTML='<use href="#arrR"/>';zh.appendChild(ico);
+    var nm=document.createElement('span');nm.className='bname';nm.textContent=bd.name;nm.title='双击改墙名';nm.ondblclick=function(){renameBoard(b,nm);};zh.appendChild(nm);
+    var cnt=document.createElement('span');cnt.className='cnt';cnt.id='cnt-'+b;zh.appendChild(cnt);
     var isDef=state.settings.defaultBoard===b;
-    var def=document.createElement('button');def.className='zdef'+(isDef?' on':'');def.title=isDef?'这是默认墙 · 删别的墙时便签自动挪到这里':'设为默认墙';
-    def.textContent='默认';
-    def.onclick=function(){setDefaultBoard(b);};
-    zh.appendChild(def);
-    var del=document.createElement('button');del.className='zdel';del.title='删掉这面墙';
-    del.textContent='×';
-    del.onclick=function(){askRemoveBoard(b,del);};
-    zh.appendChild(del);
-    var plus=document.createElement('button');plus.className='plus';plus.title='贴便签';
-    plus.textContent='+';
-    plus.onclick=function(){openNew(b);};
-    zh.appendChild(plus);
+    var def=document.createElement('button');def.className='zdef'+(isDef?' on':'');def.title=isDef?'这是默认墙 · 删别的墙时便签自动挪到这里':'设为默认墙';def.textContent='默认';def.onclick=function(){setDefaultBoard(b);};zh.appendChild(def);
+    var del=document.createElement('button');del.className='zdel';del.title='删掉这面墙';del.textContent='×';del.onclick=function(){askRemoveBoard(b,del);};zh.appendChild(del);
+    var plus=document.createElement('button');plus.className='plus';plus.title='贴便签';plus.textContent='+';plus.onclick=function(){openNew(b);};zh.appendChild(plus);
     sec.appendChild(zh);
     if(b==='course'){
       var cl=document.createElement('div');cl.className='clist';cl.id='courseList';sec.appendChild(cl);
-      var ch=document.createElement('div');ch.className='chips';ch.id='courseChips';sec.appendChild(ch);
+      var courseChips=document.createElement('div');courseChips.className='chips';courseChips.id='courseChips';sec.appendChild(courseChips);
+    }
+    if(bd.type==='partition'){
+      var tools=document.createElement('div');tools.className='partition-tools';tools.id='partition-tools-'+b;
+      var activeChild=state.settings.childFilters&&state.settings.childFilters[b]||'';
+      partitionItems(bd).forEach(function(ch){
+        var chip=document.createElement('button');chip.className='chip'+(activeChild===ch.id?' on':'');chip.type='button';chip.dataset.child=ch.id;chip.title='点击筛选，双击改名';
+        chip.innerHTML=esc(ch.name)+'<span class="n">'+activeNotes().filter(function(n){return n.board===b&&n.childId===ch.id}).length+'</span>';
+        chip.onclick=function(){state.settings.childFilters=state.settings.childFilters||{};state.settings.childFilters[b]=state.settings.childFilters[b]===ch.id?'':ch.id;save();refreshAll();};
+        chip.ondblclick=function(e){e.preventDefault();renamePartitionChild(b,ch.id,chip);};
+        var x=document.createElement('span');x.className='chip-del';x.textContent='×';x.title='删除子分区';x.onclick=function(e){e.stopPropagation();removePartitionChild(b,ch.id);};chip.appendChild(x);tools.appendChild(chip);
+      });
+      var addChild=document.createElement('button');addChild.className='chip-add';addChild.type='button';addChild.textContent='+ 子分区';addChild.onclick=function(){addPartitionChild(b);};tools.appendChild(addChild);
+      sec.appendChild(tools);
     }
     var notes=document.createElement('div');notes.className='notes';notes.id='notes-'+b;sec.appendChild(notes);
     wrap.appendChild(sec);
   });
-  // 末尾的“+ 加一块墙”虚线占位
   var add=document.createElement('div');add.className='zone zone-add';add.title='加一面墙';
-  var ai=document.createElement('div');ai.className='zai';ai.textContent='+ 加一块墙';
-  add.appendChild(ai);
-  add.onclick=function(){addBoard();};
-  wrap.appendChild(add);
+  var ai=document.createElement('div');ai.className='zai';ai.textContent='+ 加一块墙';add.appendChild(ai);add.onclick=function(){addBoard();};wrap.appendChild(add);
 }
 function renderBoardOptions(){
   var sel=document.getElementById('nBoard');if(!sel)return;
-  var cur=sel.value;
+    var cur=sel.value;
   sel.innerHTML='';
   boards().forEach(function(bd){
     var o=document.createElement('option');o.value=bd.id;o.textContent=bd.name;
@@ -1227,24 +1252,60 @@ function renderBoardOptions(){
   var hit=false;
   boards().forEach(function(bd){if(bd.id===cur)hit=true;});
   if(hit)sel.value=cur;
+  renderNoteChildOptions();
 }
-function addBoard(){
-  var add=document.querySelector('.zone-add');if(!add)return;
-  add.innerHTML='<input type="text" maxlength="12" placeholder="墙名，回车确认">';
-  var inp=add.querySelector('input');
-  var done=false;
-  var commit=function(v){
-    if(done)return;done=true;
-    v=(v||'').trim();
-    if(v)boards().push({id:'w'+uid().slice(0,6),name:v});
+function renderNoteChildOptions(selected){
+  var sel=document.getElementById('nChild');if(!sel)return;
+  var bd=boardById((document.getElementById('nBoard')||{}).value);
+  var cur=selected!==undefined?selected:sel.value;
+  sel.innerHTML='';
+  if(!bd||bd.type!=='partition'){
+    var none=document.createElement('option');none.value='';none.textContent='无子分区';sel.appendChild(none);sel.disabled=true;return;
+  }
+  sel.disabled=false;
+  var all=document.createElement('option');all.value='';all.textContent='未指定子分区';sel.appendChild(all);
+  partitionItems(bd).forEach(function(ch){var o=document.createElement('option');o.value=ch.id;o.textContent=ch.name;sel.appendChild(o);});
+  sel.value=cur||'';
+}
+function openBoardAdd(){
+  document.getElementById('newBoardName').value='';
+  document.getElementById('newBoardType').value='white';
+  openMask('mBoardAdd');
+  setTimeout(function(){document.getElementById('newBoardName').focus();},80);
+}
+function confirmAddBoard(){
+  var name=document.getElementById('newBoardName').value.trim();
+  if(!name){toast('墙名不能是空的');return;}
+  var type=document.getElementById('newBoardType').value==='partition'?'partition':'white';
+  var bd={id:'w'+uid().slice(0,6),name:name,type:type};
+  if(type==='partition')bd.children=[{id:'c'+uid().slice(0,6),name:'未分类'}];
+  boards().push(bd);
+  save();closeMask('mBoardAdd');refreshAll();
+  toast(type==='partition'?'已创建分区墙，可继续加子分区':'已创建白板墙');
+}
+function addBoard(){openBoardAdd();}
+function addPartitionChild(boardId){
+  var bd=boardById(boardId);if(!bd||bd.type!=='partition')return;
+  var tools=document.querySelector('#zone-'+boardId+' .partition-tools');if(!tools)return;
+  tools.innerHTML='<input class="chip-rename" type="text" maxlength="16" placeholder="子分区名，回车确认">';
+  var inp=tools.querySelector('input'),done=false;
+  function finish(){if(done)return;done=true;var v=inp.value.trim();if(v)bd.children.push({id:'c'+uid().slice(0,6),name:v});save();refreshAll();}
+  inp.onblur=finish;inp.onkeydown=function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){done=true;refreshAll();}};inp.focus();
+}
+function renamePartitionChild(boardId,childId,el){
+  var bd=boardById(boardId),ch=partitionItems(bd).filter(function(x){return x.id===childId})[0];if(!ch)return;
+  var inp=document.createElement('input');inp.className='chip-rename';inp.value=ch.name;inp.maxLength=16;el.replaceWith(inp);inp.focus();inp.select();
+  var done=false;function finish(){if(done)return;done=true;var v=inp.value.trim();if(v)ch.name=v;save();refreshAll();}
+  inp.onblur=finish;inp.onkeydown=function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){done=true;refreshAll();}};
+}
+function removePartitionChild(boardId,childId){
+  var bd=boardById(boardId);if(!bd)return;
+  var ch=partitionItems(bd).filter(function(x){return x.id===childId})[0];if(!ch)return;
+  askConfirm('删除子分区「'+ch.name+'」？其中便签会保留，但解除子分区归属。',function(){
+    bd.children=partitionItems(bd).filter(function(x){return x.id!==childId});
+    state.notes.forEach(function(n){if(n.board===boardId&&n.childId===childId)n.childId='';});
     save();refreshAll();
-  };
-  inp.onblur=function(){commit(inp.value);};
-  inp.onkeydown=function(e){
-    if(e.key==='Enter'){inp.blur();}
-    if(e.key==='Escape'){done=true;refreshAll();}
-  };
-  inp.focus();
+  });
 }
 function renameBoard(b,nm){
   var cur=boards().filter(function(x){return x.id===b})[0];
@@ -1322,8 +1383,10 @@ function moveBoard(src,dst){
 function renderWall(){
   boards().forEach(function(bd){
     var b=bd.id;
-    var box=document.getElementById('notes-'+b);
+    var box=document.getElementById('notes-'+b);if(!box)return;
     var list=activeNotes().filter(function(n){return n.board===b});
+    var childFilter=state.settings.childFilters&&state.settings.childFilters[b];
+    if(bd.type==='partition'&&childFilter)list=list.filter(function(n){return n.childId===childFilter;});
     if(b==='course'&&state.settings.courseFilter){
       list=list.filter(function(n){return n.courseId===state.settings.courseFilter});
     }
@@ -1346,6 +1409,7 @@ function renderWall(){
       var d=dueLabel(n);
       if(d){var s1=document.createElement('span');s1.className=d.cls;s1.textContent=d.txt;meta.appendChild(s1);}
       if(n.courseId){var s2=document.createElement('span');s2.textContent='· '+courseName(n.courseId);meta.appendChild(s2);}
+      if(bd.type==='partition'&&n.childId){var s2b=document.createElement('span');s2b.textContent='· '+childName(b,n.childId);meta.appendChild(s2b);}
       if(n.daily){var s3=document.createElement('span');s3.className='dl';s3.textContent='↻ 每日';meta.appendChild(s3);}
       var tear=document.createElement('button');tear.className='tear';tear.title='撕下（完成并收进便签盒）';
       tear.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V6a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 4v6h6"/></svg>';
@@ -1459,7 +1523,7 @@ function renderChips(){
 function boardName(b){
   var arr=(state&&state.settings&&state.settings.boards)||defaultBoards();
   for(var i=0;i<arr.length;i++)if(arr[i].id===b)return arr[i].name;
-  return {kaoyan:'考研备考',course:'学期科目',todo:'待办',life:'生活事项'}[b]||b;
+  return {kaoyan:'备考',course:'学期科目',todo:'待办',life:'生活事项'}[b]||b;
 }
 
 function renderTT(){
@@ -2049,6 +2113,7 @@ function openNew(board,courseId){
   editingNoteId=null;
   document.getElementById('nTitle').value='';
   document.getElementById('nBoard').value=board||'todo';
+  renderNoteChildOptions('');
   document.getElementById('nDue').value='';
   document.getElementById('nTime').value='';
   var pri=document.getElementById('nPriority');if(pri)pri.value='normal';
@@ -2066,6 +2131,7 @@ function openEditNote(id){
   editingNoteId=id;
   document.getElementById('nTitle').value=n.title||'';
   document.getElementById('nBoard').value=n.board||'todo';
+  renderNoteChildOptions(n.childId||'');
   document.getElementById('nDue').value=n.due||'';
   document.getElementById('nTime').value=n.time||'';
   var pri=document.getElementById('nPriority');if(pri)pri.value=n.priority||'normal';
@@ -2085,6 +2151,7 @@ function addNote(){
     var n=state.notes.filter(function(x){return x.id===editingNoteId})[0];
     if(n){
       n.title=t;n.board=b;
+      n.childId=isPartitionBoard(b)?document.getElementById('nChild').value:'';
       n.due=document.getElementById('nDue').value;
       n.time=document.getElementById('nTime').value;
       n.courseId=document.getElementById('nCourse').value;
@@ -2099,7 +2166,7 @@ function addNote(){
   }
   var tones=['morning','day','night'];
   state.notes.push({
-    id:uid(),board:b,title:t,due:document.getElementById('nDue').value,
+    id:uid(),board:b,childId:isPartitionBoard(b)?document.getElementById('nChild').value:'',title:t,due:document.getElementById('nDue').value,
     time:document.getElementById('nTime').value,courseId:document.getElementById('nCourse').value,
     priority:(document.getElementById('nPriority')||{}).value||'normal',
     daily:(document.getElementById('nType')||{}).value==='daily',lastDone:null,
@@ -2268,7 +2335,7 @@ function exportCSV(){
   var rows=[['板块','标题','重要','截止','时间','课程','状态','完成时间']];
   state.notes.forEach(function(n){
     rows.push([
-      boardName(n.board),n.title||'',n.priority==='important'?'是':'',n.due||'',n.time||'',
+      boardName(n.board)+(n.childId?' / '+childName(n.board,n.childId):''),n.title||'',n.priority==='important'?'是':'',n.due||'',n.time||'',
       n.courseId?courseName(n.courseId):'',n.done?(n.daily?'每日完成':'已完成'):'待办',
       n.doneAt?new Date(n.doneAt).toLocaleString():''
     ]);
@@ -2287,6 +2354,7 @@ function exportMD(){
       if(n.priority==='important')tags.push('重要');
       if(n.due)tags.push('截止 '+n.due);
       if(n.time)tags.push(n.time);
+      if(n.childId)tags.unshift('子分区 '+childName(n.board,n.childId));
       L.push('- '+(tags.length?'['+tags.join(' · ')+'] ':'')+(n.title||''));
     });
   });
