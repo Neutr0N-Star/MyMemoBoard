@@ -1,7 +1,7 @@
-# 知墙发布 SOP（v1.0.x 实战沉淀）
+# 知墙发布 SOP（v1.0.x ~ v1.1.x 实战沉淀）
 
 > 适用范围：知墙 MyMemoBoards 的版本发布全流程。
-> 沉淀来源：v1.0.0 / v1.0.1 / v1.0.2 / v1.0.3 四轮真实发布，含全部踩坑。
+> 沉淀来源：v1.0.0 / v1.0.1 / v1.0.2 / v1.0.3 / v1.0.4 / v1.1.0 六轮真实发布，含全部踩坑。
 > 发布模型：**git tag 触发 GitHub Actions → CI 出包 → GitHub Release + Pages 自动部署**，不走本地打包。
 
 ---
@@ -106,6 +106,8 @@ curl -s -H "Authorization: Bearer $PAT" "https://api.github.com/repos/Neutr0N-St
 | v1.0.1 | github.com 被挡推不了 | 选择性拦截 | Git Data API 建 tag 也能触发 `on: push: tags`；恢复后 `git fetch && git reset --hard origin/master` 对齐 |
 | v1.0.2 | 本地打包失败 | 环境「回收站安全删除」钩子拦截 `win-unpacked.tmp` 清理 | **本地打包失败≠代码问题**，直接走 CI 打包 |
 | v1.0.3 | App 内检查更新「弹了下就没反应」 | `autoDownload` 后台拉 106MB，github.com 被拦时下载**无声挂起**；前端轮询又**无超时** | 废弃 App 内下载，检测到新版**弹浏览器打开自己的发布页**（URL 不带版本号，永远指向最新） |
+| v1.0.4 | 内部下载其实能用，1.0.3 拆过头了 | 1.0.3 把可用链路也拆了，浏览器下载体验差 | 恢复 App 内更新：`autoDownload=true` + `autoInstallOnAppQuit=true`，加 `download-progress` 事件上报进度，前端进度条；`error` 事件 → 前端提示「连接不到 GitHub」+ 发布页链接兜底。**教训：区分「体验差」和「连不上网」——前者加反馈，后者才换链路** |
+| v1.1.0 | **更新后数据丢失（最严重）** | 数据目录「绿色化」存 exe 同目录 `data/`，自动更新/重装替换 exe 目录 → 数据被覆盖 | 数据改存标准 `%APPDATA%\MyMemoBoards`（`app.setPath('userData', ...)` 改为 `app.getPath('appData')` 下），更新与数据彻底隔离。**教训：桌面应用数据目录永远用 userData，别为「绿色便携」把数据放安装目录** |
 | 通用 | `shell.openExternal` 放行任意链接 | 渲染进程不可信 | **白名单正则**：只放行 `github.com/Neutr0N-Star/MyMemoBoard/` 与 `neutr0n-star.github.io/MyMemoBoard/` |
 | 通用 | 异步等待无超时 | 轮询/下载永远静默 | 任何异步等待必须有超时 + 失败反馈，不许无声 |
 
@@ -133,6 +135,7 @@ curl -s -H "Authorization: Bearer $PAT" "https://api.github.com/repos/Neutr0N-St
 ## 9. 设计原则（为什么这么发布）
 
 - **发布 = 推 tag，不是本地打包**：构建环境一致性靠 CI，本地环境（代理/回收站钩子/凭据缓存）不可信
-- **App 内不下载，下载交浏览器**：App 网络栈被墙就挂死，浏览器能翻墙；用户看得见下载进度，失败有反馈
+- **App 内更新优先，失败才交浏览器**：App 内自动下载 + 进度条是主链路（体验好）；连不上 GitHub 时提示并提供发布页链接兜底。**不要因为「某个网络环境下载失败」就把主链路拆了**——那是「连不上网」问题，不是「App 下载」问题，先加反馈再决定换不换
+- **桌面应用数据目录永远用 userData**：数据存 `%APPDATA%`，与安装位置隔离，更新/重装永不碰数据。「绿色便携」的诱惑（数据随 exe 走）会换来「更新丢数据」的灾难
 - **发布页 URL 不带版本号**：`neutr0n-star.github.io/MyMemoBoard/` 永远指向最新，App 代码零维护
 - **安全白名单**：凡是渲染进程能触发的系统能力（开浏览器），一律主进程白名单校验
