@@ -633,7 +633,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
     <div class="field"><label>软件更新</label>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <button class="btn" onclick="checkUpdate()">检查更新</button>
-        <span style="font-size:11px;font-weight:700;opacity:.6">桌面版支持从 GitHub Releases 自动更新</span>
+        <span style="font-size:11px;font-weight:700;opacity:.6">发现新版会在浏览器打开下载页，手动安装覆盖即可</span>
       </div>
     </div>
     <div class="field"><label>字体（整个应用生效）</label>
@@ -683,7 +683,7 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
   <div class="modal" style="max-width:420px">
     <h3>关于知墙<button class="x" onclick="closeMask('mAbout')">×</button></h3>
     <div class="field" style="font-size:13px;line-height:1.8">
-      <p><b>版本</b>：1.0.2</p>
+      <p><b>版本</b>：1.0.3</p>
       <p><b>作者</b>：Neutr0N_Star（晓星）</p>
       <p><b>工作室</b>：晷刻（Sext）通用实用软件工作室</p>
       <p><b>许可</b>：MIT License</p>
@@ -1827,29 +1827,21 @@ function checkUpdate(){
     if(r.status==='dev'){toast(r.message||'开发模式不检查更新');return;}
     if(r.status==='error'){toast('检查更新失败：'+(r.message||'网络/仓库未配置'));return;}
     if(r.available){
-      toast('发现新版本 '+(r.version||'')+'，正在后台下载…');
-      pollUpdateStatus();
+      // 1.0.3 起不再后台下载（github.com 可能被拦导致无声挂起），改为浏览器打开下载页
+      toast('检测到新版本 v'+(r.version||'')+'，正在打开下载页…');
+      if(window.desktop.openExternal){
+        window.desktop.openExternal('https://github.com/Neutr0N-Star/MyMemoBoard/releases/latest')
+          .then(function(res){
+            if(!res||!res.ok)toast('打开下载页失败，请手动访问 GitHub Releases');
+          })
+          .catch(function(){toast('打开下载页失败，请手动访问 GitHub Releases');});
+      }else{
+        toast('请手动访问 GitHub Releases 下载新版本');
+      }
     }else{
       toast('当前已是最新版本');
     }
   }).catch(function(){toast('检查更新失败');});
-}
-var updatePollTimer=null;
-function pollUpdateStatus(){
-  if(updatePollTimer)clearInterval(updatePollTimer);
-  updatePollTimer=setInterval(function(){
-    if(!window.desktop||!window.desktop.getUpdateStatus){clearInterval(updatePollTimer);return;}
-    window.desktop.getUpdateStatus().then(function(r){
-      var s=(r&&r.status)||'';
-      if(s.indexOf('downloaded:')===0){
-        clearInterval(updatePollTimer);
-        toast('更新已下载（v'+s.split(':')[1]+'），重启后生效');
-      }else if(s==='error'){
-        clearInterval(updatePollTimer);
-        toast('后台下载失败，请稍后重试');
-      }
-    }).catch(function(){});
-  },2000);
 }
 
 // ===== 自选字体（整个应用生效，含标题）=====

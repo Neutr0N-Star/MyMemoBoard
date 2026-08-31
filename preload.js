@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('desktop', {
   backupState: (json) => ipcRenderer.send('backup-state', json),
   checkUpdate: () => ipcRenderer.invoke('check-update'),
   getUpdateStatus: () => ipcRenderer.invoke('get-update-status'),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
   pickFontFile: () => ipcRenderer.invoke('pick-font-file'),
   readFontFile: (name) => ipcRenderer.invoke('read-font-file', name),
   encryptText: (text) => ipcRenderer.invoke('encrypt-text', text),

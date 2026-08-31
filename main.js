@@ -2,7 +2,7 @@
 // 职责边界：只做「窗口外壳 + 数据落盘位置 + 单实例锁」三件事。
 // 业务逻辑全在 index.html（纯前端 + localStorage），主进程不介入。
 
-const { app, BrowserWindow, ipcMain, Notification, session, safeStorage, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, Notification, session, safeStorage, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { autoUpdater } = require('electron-updater');
@@ -93,16 +93,12 @@ let updateStatus = 'idle';
 function initAutoUpdate(){
   try{
     if(!app.isPackaged) return;
-    autoUpdater.autoDownload = true;
-    autoUpdater.autoInstallOnAppQuit = true;
+    // 1.0.3 起不再后台自动下载：github.com 在部分网络下被拦，下载会无声挂起。
+    // 改为手动「检查更新」发现新版 → 弹浏览器打开发布页，由浏览器接管下载。
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = false;
     autoUpdater.on('update-available', function(info){ updateStatus = 'available:' + info.version; });
     autoUpdater.on('update-not-available', function(){ updateStatus = 'up-to-date'; });
-    autoUpdater.on('update-downloaded', function(info){
-      updateStatus = 'downloaded:' + info.version;
-      if(win && Notification.isSupported()){
-        new Notification({ title: '知墙更新已就绪', body: '重启后生效（v' + info.version + '）' }).show();
-      }
-    });
     autoUpdater.on('error', function(){ updateStatus = 'error'; });
     autoUpdater.checkForUpdates().catch(function(){});
   }catch(_e){}
@@ -281,6 +277,19 @@ ipcMain.handle('check-update', async function(){
 
 ipcMain.handle('get-update-status', function(){
   return { status: updateStatus };
+});
+
+// 1.0.3：检查到新版后由渲染进程请求打开浏览器下载页（仅放行 GitHub 仓库链接，防止被滥用跳转任意网站）
+ipcMain.handle('open-external', async function(_e, url){
+  try{
+    const u = String(url || '');
+    const allow = /^https:\/\/github\.com\/Neutr0N-Star\/MyMemoBoard\//;
+    if(!allow.test(u)) return { ok:false, message:'链接不在允许范围' };
+    await shell.openExternal(u);
+    return { ok:true };
+  }catch(err){
+    return { ok:false, message:String((err && err.message) || err) };
+  }
 });
 
 // 字体导入：选文件 → 拷进 userData/fonts → 返回 base64 给渲染进程注册 FontFace
