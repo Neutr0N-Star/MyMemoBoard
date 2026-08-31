@@ -633,7 +633,17 @@ footer{margin-top:14px;text-align:center;font-size:10.5px;color:var(--ink);font-
     <div class="field"><label>软件更新</label>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <button class="btn" onclick="checkUpdate()">检查更新</button>
-        <span style="font-size:11px;font-weight:700;opacity:.6">发现新版会在浏览器打开下载页，手动安装覆盖即可</span>
+        <span style="font-size:11px;font-weight:700;opacity:.6">发现新版会在后台下载，下载完重启生效</span>
+      </div>
+      <div id="updProgressWrap" style="display:none;margin-top:8px;align-items:center;gap:8px">
+        <div style="flex:1;height:10px;border:1.5px solid var(--ink);background:#fff">
+          <div id="updProgressBar" style="height:100%;width:0%;background:var(--ink)"></div>
+        </div>
+        <span id="updProgressText" style="font-size:11px;font-weight:700">0%</span>
+      </div>
+      <div id="updErrorWrap" style="display:none;margin-top:6px;font-size:12px;font-weight:700">
+        连接不到 GitHub，请检查网络。
+        <a href="javascript:void(0)" onclick="openReleasePage()" style="text-decoration:underline;color:var(--ink)">点此访问发布页手动下载</a>
       </div>
     </div>
     <div class="field"><label>字体（整个应用生效）</label>
@@ -1820,28 +1830,72 @@ function toggleAutoBackup(v){
   if(abh)abh.textContent=v?'每天自动备份：data/backups/ 保留 7 天':'开启后每天自动在 data/backups/ 留一份，保留 7 天';
   toast(v?'已开启自动备份':'已关闭自动备份');
 }
+var updatePollTimer = null;
 function checkUpdate(){
   if(!window.desktop||!window.desktop.checkUpdate){toast('检查更新只在桌面版里生效');return;}
   toast('正在检查更新…');
   window.desktop.checkUpdate().then(function(r){
     if(r.status==='dev'){toast(r.message||'开发模式不检查更新');return;}
-    if(r.status==='error'){toast('检查更新失败：'+(r.message||'网络/仓库未配置'));return;}
+    if(r.status==='error'){
+      showUpdError();
+      toast('连接不到 GitHub，请检查网络');
+      return;
+    }
     if(r.available){
-      // 1.0.3 起不再后台下载（github.com 可能被拦导致无声挂起），改为浏览器打开下载页
-      toast('检测到新版本 v'+(r.version||'')+'，正在打开下载页…');
-      if(window.desktop.openExternal){
-        window.desktop.openExternal('https://neutr0n-star.github.io/MyMemoBoard/')
-          .then(function(res){
-            if(!res||!res.ok)toast('打开下载页失败，请手动访问 GitHub Releases');
-          })
-          .catch(function(){toast('打开下载页失败，请手动访问 GitHub Releases');});
-      }else{
-        toast('请手动访问 GitHub Releases 下载新版本');
-      }
+      toast('发现新版本 v'+(r.version||'')+'，正在后台下载…');
+      showUpdProgress(0);
+      pollUpdateStatus();
     }else{
       toast('当前已是最新版本');
     }
-  }).catch(function(){toast('检查更新失败');});
+  }).catch(function(){
+    showUpdError();
+    toast('连接不到 GitHub，请检查网络');
+  });
+}
+function pollUpdateStatus(){
+  if(updatePollTimer)clearInterval(updatePollTimer);
+  updatePollTimer=setInterval(function(){
+    if(!window.desktop||!window.desktop.getUpdateStatus){clearInterval(updatePollTimer);return;}
+    window.desktop.getUpdateStatus().then(function(r){
+      var s=(r&&r.status)||'';
+      if(s.indexOf('downloaded:')===0){
+        clearInterval(updatePollTimer);
+        showUpdProgress(100);
+        toast('更新已下载（v'+s.split(':')[1]+'），重启后生效');
+      }else if(s==='error'){
+        clearInterval(updatePollTimer);
+        showUpdError();
+        toast('连接不到 GitHub，下载失败');
+      }else if(s==='progress'){
+        showUpdProgress((r&&r.progress)||0);
+      }
+    }).catch(function(){});
+  },1200);
+}
+function showUpdProgress(p){
+  var w=document.getElementById('updProgressWrap');
+  if(!w)return;
+  w.style.display='flex';
+  var bar=document.getElementById('updProgressBar');
+  if(bar)bar.style.width=Math.max(0,Math.min(100,p||0))+'%';
+  var t=document.getElementById('updProgressText');
+  if(t)t.textContent=Math.round(p||0)+'%';
+}
+function showUpdError(){
+  var w=document.getElementById('updProgressWrap');
+  if(w)w.style.display='none';
+  var e=document.getElementById('updErrorWrap');
+  if(e)e.style.display='block';
+}
+function openReleasePage(){
+  if(window.desktop&&window.desktop.openExternal){
+    window.desktop.openExternal('https://neutr0n-star.github.io/MyMemoBoard/')
+      .then(function(res){ if(!res||!res.ok)toast('打不开发布页，请手动访问 GitHub'); })
+      .catch(function(){toast('打不开发布页，请手动访问 GitHub');});
+  }else{
+    toast('请手动访问 https://neutr0n-star.github.io/MyMemoBoard/');
+  }
 }
 
 // ===== 自选字体（整个应用生效，含标题）=====

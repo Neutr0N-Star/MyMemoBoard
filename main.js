@@ -86,6 +86,8 @@ if (process.platform === 'win32') {
 // ---------------------------------------------------------------------------
 let win = null;
 let updateStatus = 'idle';
+let updateProgress = 0;
+let updateError = '';
 
 // ---------------------------------------------------------------------------
 // 2.5 自动更新：GitHub Releases 作为更新源（打包版才启用）
@@ -93,13 +95,28 @@ let updateStatus = 'idle';
 function initAutoUpdate(){
   try{
     if(!app.isPackaged) return;
-    // 1.0.3 起不再后台自动下载：github.com 在部分网络下被拦，下载会无声挂起。
-    // 改为手动「检查更新」发现新版 → 弹浏览器打开发布页，由浏览器接管下载。
-    autoUpdater.autoDownload = false;
-    autoUpdater.autoInstallOnAppQuit = false;
+    // 1.0.4 起恢复 App 内自动下载（内部下载能用且体验更好）：
+    // 自动下载并自动安装（重启后生效），配合前端进度条展示下载进度；
+    // 网络连不到 GitHub 时由 error 事件驱动前端给出发布页链接兜底。
+    autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
     autoUpdater.on('update-available', function(info){ updateStatus = 'available:' + info.version; });
     autoUpdater.on('update-not-available', function(){ updateStatus = 'up-to-date'; });
-    autoUpdater.on('error', function(){ updateStatus = 'error'; });
+    autoUpdater.on('download-progress', function(d){
+      updateProgress = Math.round((d && d.percent) || 0);
+      updateStatus = 'progress';
+    });
+    autoUpdater.on('update-downloaded', function(info){
+      updateProgress = 100;
+      updateStatus = 'downloaded:' + info.version;
+      if(win && Notification.isSupported()){
+        new Notification({ title: '知墙更新已就绪', body: '重启后生效（v' + info.version + '）' }).show();
+      }
+    });
+    autoUpdater.on('error', function(err){
+      updateStatus = 'error';
+      updateError = String((err && err.message) || err);
+    });
     autoUpdater.checkForUpdates().catch(function(){});
   }catch(_e){}
 }
@@ -276,7 +293,7 @@ ipcMain.handle('check-update', async function(){
 });
 
 ipcMain.handle('get-update-status', function(){
-  return { status: updateStatus };
+  return { status: updateStatus, progress: updateProgress };
 });
 
 // 1.0.3：检查到新版后由渲染进程请求打开浏览器下载页（仅放行本仓库与发布页，防止被滥用跳转任意网站）
