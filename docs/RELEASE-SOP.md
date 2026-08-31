@@ -24,7 +24,7 @@
 |---|---|
 | `package.json` | `"version"` |
 | `package-lock.json` | 顶部 `"version"` **和** `packages[""].version`（两处！） |
-| `index.html` | 关于浮窗 `<p><b>版本</b>：x.x.x</p>` |
+| `index.html` | 关于浮窗 `<p><b>版本</b>：x.x.x</p>`（706 行附近，v1.0.3 遗留到 v1.2.0 才发现，别漏） |
 
 > `package-lock.json` 里其他 `1.0.x` 都是依赖版本号，**别动**。
 
@@ -116,7 +116,7 @@ curl -s -H "Authorization: Bearer $PAT" "https://api.github.com/repos/Neutr0N-St
 ## 8. 每次发布照抄的验收清单
 
 ```
-[ ] 版本号三处同步（package.json / package-lock.json×2 / index.html 关于页）
+[ ] 版本号三处同步（package.json / package-lock.json×2 / index.html 关于浮窗）
 [ ] 发布文件同步（CHANGELOG / README / docs/index.html / docs/RELEASE.md）
 [ ] main.js + preload.js + index.html 语法检查通过
 [ ] 关键行为静态断言通过
